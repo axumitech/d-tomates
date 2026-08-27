@@ -22,16 +22,28 @@ jobs:
       APP_ENV: testing
       APP_DEBUG: "false"
       APP_URL: http://localhost
+
       DB_CONNECTION: sqlite
       DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
+
       CACHE_STORE: array
       SESSION_DRIVER: array
       QUEUE_CONNECTION: sync
       MAIL_MAILER: log
 
+      DEPLOY_ARCHIVE: /tmp/d-tomates-public.tar.gz
+
     steps:
+      # ============================================================
+      # CHECKOUT
+      # ============================================================
+
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # ============================================================
+      # PHP / LARAVEL
+      # ============================================================
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -46,8 +58,10 @@ jobs:
       - name: Verify PHP version
         run: |
           set -euo pipefail
+
           php -v
           composer --version
+
           PHP_VERSION_ACTUAL="$(php -r 'echo PHP_VERSION;')"
 
           if ! php -r 'exit(version_compare(PHP_VERSION, "8.4.1", ">=") ? 0 : 1);'; then
@@ -59,12 +73,16 @@ jobs:
       - name: Prepare Laravel CI environment
         run: |
           set -euo pipefail
+
           cp .env.example .env
+
           mkdir -p database
           touch database/database.sqlite
 
       - name: Install PHP dependencies
         run: |
+          set -euo pipefail
+
           composer install \
             --prefer-dist \
             --no-interaction \
@@ -73,10 +91,16 @@ jobs:
 
       - name: Prepare Laravel
         run: |
+          set -euo pipefail
+
           php artisan key:generate --force
           php artisan optimize:clear
           php artisan route:clear
           php artisan wayfinder:generate --with-form
+
+      # ============================================================
+      # FRONTEND
+      # ============================================================
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -85,22 +109,57 @@ jobs:
           cache: npm
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: |
+          set -euo pipefail
+          npm ci
 
       - name: Build frontend
-        run: npm run build
+        run: |
+          set -euo pipefail
+          npm run build
 
       - name: Verify frontend build
         run: |
+          set -euo pipefail
+
           test -d public/build
           test -f public/build/manifest.json
 
+          echo "Frontend build successfully generated"
+          ls -lah public/build
+          ls -lah public/build/manifest.json
+
+      # ============================================================
+      # PACKAGE PUBLIC DIRECTORY
+      # ============================================================
+
       - name: Package public assets
         run: |
+          set -euo pipefail
+
+          echo "Creating deployment archive..."
+
+          rm -f "$DEPLOY_ARCHIVE"
+
           tar \
             --exclude='./index.php' \
-            -czf /tmp/ferme-kabanda-public.tar.gz \
+            -czf "$DEPLOY_ARCHIVE" \
             -C public .
+
+          if [ ! -f "$DEPLOY_ARCHIVE" ]; then
+            echo "ERROR: Deployment archive was not created"
+            exit 1
+          fi
+
+          echo "Deployment archive successfully created:"
+          ls -lh "$DEPLOY_ARCHIVE"
+
+          echo "Archive contents:"
+          tar -tzf "$DEPLOY_ARCHIVE" | head -50
+
+      # ============================================================
+      # SSH CONFIGURATION
+      # ============================================================
 
       - name: Configure SSH
         env:
@@ -117,21 +176,50 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/id_ed25519"
           chmod 600 "$HOME/.ssh/id_ed25519"
 
-          ssh-keyscan -t ed25519 -p "$PORT" "$HOST" 2>/dev/null \
+          echo "Retrieving Hostking SSH host key..."
+
+          ssh-keyscan \
+            -t ed25519 \
+            -p "$PORT" \
+            "$HOST" \
+            2>/dev/null \
             > "$HOME/.ssh/known_hosts_candidate"
 
-          ACTUAL_FINGERPRINT="$(
-            ssh-keygen -lf "$HOME/.ssh/known_hosts_candidate" -E sha256 |
-            awk '{print $2}'
-          )"
-
-          if [ "$ACTUAL_FINGERPRINT" != "$EXPECTED_FINGERPRINT" ]; then
-            echo "ERROR: Hostking SSH fingerprint mismatch"
+          if [ ! -s "$HOME/.ssh/known_hosts_candidate" ]; then
+            echo "ERROR: Unable to retrieve Hostking SSH host key"
             exit 1
           fi
 
-          mv "$HOME/.ssh/known_hosts_candidate" "$HOME/.ssh/known_hosts"
+          ACTUAL_FINGERPRINT="$(
+            ssh-keygen \
+              -lf "$HOME/.ssh/known_hosts_candidate" \
+              -E sha256 |
+            awk '{print $2}'
+          )"
+
+          if [ -z "$EXPECTED_FINGERPRINT" ]; then
+            echo "ERROR: HOSTKING_HOST_FINGERPRINT is empty"
+            exit 1
+          fi
+
+          if [ "$ACTUAL_FINGERPRINT" != "$EXPECTED_FINGERPRINT" ]; then
+            echo "ERROR: Hostking SSH fingerprint mismatch"
+            echo "Expected: $EXPECTED_FINGERPRINT"
+            echo "Received: $ACTUAL_FINGERPRINT"
+            exit 1
+          fi
+
+          mv \
+            "$HOME/.ssh/known_hosts_candidate" \
+            "$HOME/.ssh/known_hosts"
+
           chmod 600 "$HOME/.ssh/known_hosts"
+
+          echo "Hostking fingerprint verified successfully"
+
+      # ============================================================
+      # SSH TEST
+      # ============================================================
 
       - name: Test SSH connection
         env:
@@ -139,6 +227,8 @@ jobs:
           PORT: ${{ secrets.HOSTKING_PORT }}
           USER: ${{ secrets.HOSTKING_USER }}
         run: |
+          set -euo pipefail
+
           ssh \
             -i "$HOME/.ssh/id_ed25519" \
             -o IdentitiesOnly=yes \
@@ -147,7 +237,15 @@ jobs:
             -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             -p "$PORT" \
             "$USER@$HOST" \
-            'echo "SSH connection successful"; whoami; pwd'
+            '
+              echo "SSH connection successful"
+              echo "User: $(whoami)"
+              echo "Directory: $(pwd)"
+            '
+
+      # ============================================================
+      # UPLOAD BUILD
+      # ============================================================
 
       - name: Upload public assets
         env:
@@ -155,6 +253,19 @@ jobs:
           PORT: ${{ secrets.HOSTKING_PORT }}
           USER: ${{ secrets.HOSTKING_USER }}
         run: |
+          set -euo pipefail
+
+          echo "Checking deployment archive..."
+
+          if [ ! -f "$DEPLOY_ARCHIVE" ]; then
+            echo "ERROR: $DEPLOY_ARCHIVE does not exist"
+            exit 1
+          fi
+
+          ls -lh "$DEPLOY_ARCHIVE"
+
+          echo "Uploading public assets to Hostking..."
+
           scp \
             -i "$HOME/.ssh/id_ed25519" \
             -o IdentitiesOnly=yes \
@@ -162,8 +273,14 @@ jobs:
             -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             -P "$PORT" \
-            /tmp/d-tomates-public.tar.gz \
+            "$DEPLOY_ARCHIVE" \
             "$USER@$HOST:/home/tctvnnfe/d-tomates-public-${GITHUB_SHA}.tar.gz"
+
+          echo "Upload successful"
+
+      # ============================================================
+      # DEPLOY
+      # ============================================================
 
       - name: Deploy Laravel
         env:
@@ -171,6 +288,8 @@ jobs:
           PORT: ${{ secrets.HOSTKING_PORT }}
           USER: ${{ secrets.HOSTKING_USER }}
         run: |
+          set -euo pipefail
+
           ssh \
             -i "$HOME/.ssh/id_ed25519" \
             -o IdentitiesOnly=yes \
@@ -185,32 +304,95 @@ jobs:
 
           APP_DIR="/home/tctvnnfe/d-tomates"
           PUBLIC_DIR="/home/tctvnnfe/domains/d-tomates.com/public_html"
-          ARCHIVE="/home/tctvnnfe/d-tomates-public-${DEPLOY_SHA}.tar.gz"
-          STAGING_DIR="/home/tctvnnfe/.deploy/d-tomates-${DEPLOY_SHA}"
 
-          cd "$APP_DIR"
-          mkdir -p "$(dirname "$STAGING_DIR")"
+          ARCHIVE="/home/tctvnnfe/d-tomates-public-${DEPLOY_SHA}.tar.gz"
+
+          DEPLOY_ROOT="/home/tctvnnfe/.deploy"
+          STAGING_DIR="${DEPLOY_ROOT}/d-tomates-${DEPLOY_SHA}"
+
+          echo "======================================="
+          echo "Deploying D-Tomates"
+          echo "Commit: ${DEPLOY_SHA}"
+          echo "======================================="
+
+          # --------------------------------------------------------
+          # CLEANUP FUNCTION
+          # --------------------------------------------------------
 
           cleanup() {
             EXIT_CODE=$?
+
+            echo "Running deployment cleanup..."
+
             rm -rf "$STAGING_DIR"
             rm -f "$ARCHIVE"
-            php artisan up >/dev/null 2>&1 || true
+
+            if [ -f "$APP_DIR/artisan" ]; then
+              cd "$APP_DIR"
+              php artisan up >/dev/null 2>&1 || true
+            fi
+
             exit "$EXIT_CODE"
           }
 
           trap cleanup EXIT
 
+          # --------------------------------------------------------
+          # VERIFY DIRECTORIES
+          # --------------------------------------------------------
+
+          test -d "$APP_DIR"
+          test -d "$PUBLIC_DIR"
+
+          cd "$APP_DIR"
+
           test -f .env
           test -f artisan
+          test -f composer.json
           test -f "$ARCHIVE"
 
+          mkdir -p "$DEPLOY_ROOT"
+
+          # --------------------------------------------------------
+          # UPDATE SOURCE CODE
+          # --------------------------------------------------------
+
+          echo "Updating source code..."
+
           git fetch --prune origin main
+
+          git cat-file -e "${DEPLOY_SHA}^{commit}"
+
           git reset --hard "$DEPLOY_SHA"
+
+          # --------------------------------------------------------
+          # MAINTENANCE MODE
+          # --------------------------------------------------------
+
+          echo "Enabling maintenance mode..."
 
           php artisan down --retry=60 || true
 
-          php -r 'exit(version_compare(PHP_VERSION, "8.4.1", ">=") ? 0 : 1);'
+          # --------------------------------------------------------
+          # VERIFY PHP
+          # --------------------------------------------------------
+
+          echo "Checking PHP version..."
+
+          php -v
+
+          php -r '
+              if (! version_compare(PHP_VERSION, "8.4.1", ">=")) {
+                  fwrite(STDERR, "PHP >= 8.4.1 required\n");
+                  exit(1);
+              }
+          '
+
+          # --------------------------------------------------------
+          # COMPOSER
+          # --------------------------------------------------------
+
+          echo "Installing production dependencies..."
 
           composer install \
             --no-dev \
@@ -219,43 +401,134 @@ jobs:
             --no-progress \
             --optimize-autoloader
 
+          # --------------------------------------------------------
+          # LARAVEL
+          # --------------------------------------------------------
+
+          echo "Clearing Laravel caches..."
+
           php artisan optimize:clear
+
+          echo "Running database migrations..."
+
           php artisan migrate --force
+
+          # --------------------------------------------------------
+          # EXTRACT FRONTEND
+          # --------------------------------------------------------
+
+          echo "Extracting frontend package..."
 
           rm -rf "$STAGING_DIR"
           mkdir -p "$STAGING_DIR"
-          tar -xzf "$ARCHIVE" -C "$STAGING_DIR"
+
+          tar \
+            -xzf "$ARCHIVE" \
+            -C "$STAGING_DIR"
+
+          test -d "$STAGING_DIR/build"
           test -f "$STAGING_DIR/build/manifest.json"
+
+          # --------------------------------------------------------
+          # ATOMIC BUILD REPLACEMENT
+          # --------------------------------------------------------
 
           NEW_BUILD="$PUBLIC_DIR/.build-${DEPLOY_SHA}"
           OLD_BUILD="$PUBLIC_DIR/.build-previous"
 
-          rm -rf "$NEW_BUILD" "$OLD_BUILD"
-          mv "$STAGING_DIR/build" "$NEW_BUILD"
-
-          if [ -d "$PUBLIC_DIR/build" ]; then
-            mv "$PUBLIC_DIR/build" "$OLD_BUILD"
-          fi
-
-          mv "$NEW_BUILD" "$PUBLIC_DIR/build"
+          rm -rf "$NEW_BUILD"
           rm -rf "$OLD_BUILD"
 
-          cp -a "$STAGING_DIR/." "$PUBLIC_DIR/"
+          echo "Preparing new Vite build..."
 
-          # Laravel @vite() cherche dans APP_DIR/public/build.
-          # On le relie au build réel servi par Apache.
+          mv \
+            "$STAGING_DIR/build" \
+            "$NEW_BUILD"
+
+          if [ -d "$PUBLIC_DIR/build" ]; then
+            echo "Backing up current build..."
+
+            mv \
+              "$PUBLIC_DIR/build" \
+              "$OLD_BUILD"
+          fi
+
+          echo "Activating new build..."
+
+          mv \
+            "$NEW_BUILD" \
+            "$PUBLIC_DIR/build"
+
+          rm -rf "$OLD_BUILD"
+
+          # --------------------------------------------------------
+          # COPY OTHER PUBLIC FILES
+          # --------------------------------------------------------
+
+          echo "Synchronizing public assets..."
+
+          cp -a \
+            "$STAGING_DIR/." \
+            "$PUBLIC_DIR/"
+
+          # --------------------------------------------------------
+          # LINK LARAVEL PUBLIC/BUILD
+          # --------------------------------------------------------
+
+          echo "Linking Laravel public/build..."
+
           rm -rf "$APP_DIR/public/build"
-          ln -s "$PUBLIC_DIR/build" "$APP_DIR/public/build"
 
-          chmod -R 775 storage bootstrap/cache || true
+          ln -s \
+            "$PUBLIC_DIR/build" \
+            "$APP_DIR/public/build"
+
+          # --------------------------------------------------------
+          # PERMISSIONS
+          # --------------------------------------------------------
+
+          echo "Updating Laravel permissions..."
+
+          chmod -R 775 \
+            storage \
+            bootstrap/cache \
+            || true
+
+          # --------------------------------------------------------
+          # PRODUCTION CACHE
+          # --------------------------------------------------------
+
+          echo "Building Laravel production cache..."
+
           php artisan config:cache
           php artisan view:cache
+
+          # Si toutes tes routes sont compatibles avec route:cache,
+          # tu peux également activer :
+          #
+          # php artisan route:cache
+
+          # --------------------------------------------------------
+          # APPLICATION UP
+          # --------------------------------------------------------
+
+          echo "Disabling maintenance mode..."
+
           php artisan up
+
+          # --------------------------------------------------------
+          # FINAL CLEANUP
+          # --------------------------------------------------------
 
           rm -rf "$STAGING_DIR"
           rm -f "$ARCHIVE"
+
           trap - EXIT
 
-          echo "DEPLOYMENT SUCCESSFUL - ${DEPLOY_SHA}"
+          echo
+          echo "======================================="
+          echo "DEPLOYMENT SUCCESSFUL"
+          echo "Commit: ${DEPLOY_SHA}"
+          echo "======================================="
 
           REMOTE_SCRIPT
