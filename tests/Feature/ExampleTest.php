@@ -9,10 +9,10 @@ class ExampleTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_returns_a_successful_response()
+    public function test_home_displays_the_field_notebook()
     {
         $response = $this->get(route('home'));
 
-        $response->assertOk();
+        $response->assertOk()->assertInertia(fn ($page) => $page->component('carnet'));
     }
 }

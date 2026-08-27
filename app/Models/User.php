@@ -16,6 +16,11 @@ use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
+ * @property Role $role
+ * @property Carbon|null $employed_until
+ */
+
+/**
  * @property int $id
  * @property string $name
  * @property string $email

@@ -6,6 +6,14 @@ namespace App\Enums;
 
 enum Dimension: string
 {
-    case Mass = 'mass'; case Volume = 'volume'; case Count = 'count';
-    public function baseUnitCode(): string { return match ($this) { self::Mass => 'g', self::Volume => 'ml', self::Count => 'u' }; }
+    case Mass = 'mass';
+    case Volume = 'volume';
+    case Count = 'count';
+
+    public function baseUnitCode(): string
+    {
+        return match ($this) {
+            self::Mass => 'g', self::Volume => 'ml', self::Count => 'u'
+        };
+    }
 }

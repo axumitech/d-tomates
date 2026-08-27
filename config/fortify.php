@@ -161,7 +161,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        ...((bool) env('DTOMATE_ALLOW_REGISTRATION', false) ? [Features::registration()] : []),
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

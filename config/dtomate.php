@@ -9,5 +9,7 @@ return [
     'currency' => env('DTOMATE_CURRENCY', 'USD'),
     'backdate_tolerance_hours' => 24,
     'max_client_drift_seconds' => 300,
+    'seed_password' => env('DTOMATE_SEED_PASSWORD', 'password'),
+    'site_access_code' => env('DTOMATE_SITE_ACCESS_CODE', '2026'),
     'legacy' => ['expected_format' => 'CARNET-DTOMATE', 'initial_stock_reason' => "reprise de l'existant"],
 ];

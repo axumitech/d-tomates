@@ -117,5 +117,21 @@
         "resources/js/**/*.ts",
         "resources/js/**/*.d.ts",
         "resources/js/**/*.tsx"
+    ],
+    "exclude": [
+        "resources/js/pages/auth/**",
+        "resources/js/pages/settings/**",
+        "resources/js/layouts/auth/**",
+        "resources/js/layouts/settings/**",
+        "resources/js/components/delete-user.tsx",
+        "resources/js/components/manage-passkeys.tsx",
+        "resources/js/components/manage-two-factor.tsx",
+        "resources/js/components/passkey-item.tsx",
+        "resources/js/components/passkey-register.tsx",
+        "resources/js/components/passkey-verify.tsx",
+        "resources/js/components/passkey-verify.tsx",
+        "resources/js/components/two-factor-recovery-codes.tsx",
+        "resources/js/components/two-factor-setup-modal.tsx",
+        "resources/js/components/user-menu-content.tsx"
     ]
 }

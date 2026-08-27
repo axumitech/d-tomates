@@ -10,7 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 class TaskEvent extends Model
 {
     use AppendOnly;
+
     public const UPDATED_AT = null;
-    protected $fillable = ['task_id','event','payload','performed_by'];
-    protected function casts(): array { return ['payload' => 'array']; }
+
+    protected $fillable = ['task_id', 'event', 'payload', 'performed_by'];
+
+    protected function casts(): array
+    {
+        return ['payload' => 'array'];
+    }
 }
