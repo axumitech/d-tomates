@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\DayClosure;
+use App\Models\Department;
 use App\Models\Task;
 use App\Models\User;
 use App\Support\ServerClock;
@@ -20,6 +21,16 @@ final class DayClosureService
         $outstanding = Task::query()->where('department_id', $departmentId)->whereDate('due_at', '<=', $workDate)->where('status', Task::TODO)->exists();
         if ($outstanding) {
             throw new RuntimeException('Clôture refusée : des tâches échues restent sans réponse.');
+        }
+
+        $department = Department::query()->findOrFail($departmentId);
+        $site = $department->site()->firstOrFail();
+        $missing = app(AttendanceService::class)->missingOn($site, $workDate);
+        if ($missing->isNotEmpty()) {
+            throw new RuntimeException(sprintf(
+                'Clôture refusée : %d membre(s) de l’équipe ne sont pas encore pointés.',
+                $missing->count(),
+            ));
         }
 
         return DayClosure::query()->create(['department_id' => $departmentId, 'work_date' => $workDate->toDateString(), 'closed_by' => $by->id, 'closed_at' => ServerClock::now()]);

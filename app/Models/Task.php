@@ -4,9 +4,19 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property string $reference
+ * @property string $title
+ * @property string $status
+ * @property string $priority
+ * @property CarbonImmutable $due_at
+ * @property Zone|null $zone
+ */
 class Task extends Model
 {
     public const TODO = 'todo';
@@ -30,6 +40,12 @@ class Task extends Model
     public function events(): HasMany
     {
         return $this->hasMany(TaskEvent::class);
+    }
+
+    /** @return BelongsTo<Zone, $this> */
+    public function zone(): BelongsTo
+    {
+        return $this->belongsTo(Zone::class);
     }
 
     public function isOutstanding(): bool

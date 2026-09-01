@@ -11,6 +11,16 @@ enum Role: string
     case Magasinier = 'magasinier';
     case Agent = 'agent';
 
+    public function label(): string
+    {
+        return match ($this) {
+            self::Direction => 'Direction',
+            self::Superviseur => 'Superviseur',
+            self::Magasinier => 'Magasinier',
+            self::Agent => 'Agent',
+        };
+    }
+
     public function canCloseDay(): bool
     {
         return $this === self::Direction || $this === self::Superviseur;

@@ -8,6 +8,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -60,7 +62,10 @@ class User extends Authenticatable implements PasskeyUser
 
     public function isActive(): bool
     {
-        return $this->employed_until === null || $this->employed_until->isFuture();
+        $today = now((string) config('dtomate.timezone'))->startOfDay();
+
+        return ($this->employed_from === null || $this->employed_from->lessThanOrEqualTo($today))
+            && ($this->employed_until === null || $this->employed_until->greaterThanOrEqualTo($today));
     }
 
     public function ceilingCents(): int
@@ -71,5 +76,25 @@ class User extends Authenticatable implements PasskeyUser
     public function canApproveAmount(int $amount): bool
     {
         return $this->isActive() && $amount <= $this->ceilingCents();
+    }
+
+    public function site(): BelongsTo
+    {
+        return $this->belongsTo(Site::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function manager(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'manager_id');
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
     }
 }

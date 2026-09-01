@@ -17,4 +17,16 @@ final class ServerClock
     {
         return self::now()->startOfDay();
     }
+
+    public static function workDateNeedsApproval(CarbonImmutable $workDate): bool
+    {
+        $date = $workDate->setTimezone((string) config('dtomate.timezone'))->startOfDay();
+        $today = self::today();
+
+        if ($date->isAfter($today)) {
+            return true;
+        }
+
+        return $date->isBefore(self::now()->subHours((int) config('dtomate.backdate_tolerance_hours', 24))->startOfDay());
+    }
 }
