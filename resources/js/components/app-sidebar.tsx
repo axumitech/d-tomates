@@ -1,5 +1,11 @@
 import { Link } from '@inertiajs/react';
-import { ClipboardList, LayoutGrid, ShieldCheck, Wrench } from 'lucide-react';
+import {
+    ClipboardList,
+    LayoutGrid,
+    ShieldCheck,
+    UsersRound,
+    Wrench,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -27,17 +33,22 @@ const mainNavItems: NavItem[] = [
         href: '/carnet',
         icon: ClipboardList,
     },
+    {
+        title: 'Maintenance',
+        href: '/maintenance',
+        icon: Wrench,
+    },
+    {
+        title: 'Administration',
+        href: '/administration',
+        icon: UsersRound,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Maintenance',
-        href: '/#maintenance',
-        icon: Wrench,
-    },
-    {
         title: 'Registres sécurisés',
-        href: '/#registres',
+        href: '/registres',
         icon: ShieldCheck,
     },
 ];

@@ -10,4 +10,9 @@ class CarnetPageTest extends TestCase
     {
         $this->get(route('carnet'))->assertOk()->assertInertia(fn ($page) => $page->component('carnet'));
     }
+
+    public function test_secure_registers_have_a_dedicated_page(): void
+    {
+        $this->get(route('registres'))->assertOk()->assertInertia(fn ($page) => $page->component('registres'));
+    }
 }

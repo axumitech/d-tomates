@@ -36,6 +36,7 @@ final class AdministrationController extends Controller
                 'job_title' => $user->job_title,
                 'role' => $user->role->value,
                 'role_label' => $user->role->label(),
+                'site_id' => $user->site_id,
                 'department_id' => $user->department_id,
                 'department' => $user->department?->name,
                 'manager_id' => $user->manager_id,

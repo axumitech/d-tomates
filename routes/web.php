@@ -23,3 +23,4 @@ Route::patch('/administration/equipe/{user}', [AdministrationController::class, 
 Route::post('/administration/equipements', [AdministrationController::class, 'storeAsset'])->name('administration.assets.store');
 Route::patch('/administration/equipements/{asset}', [AdministrationController::class, 'updateAsset'])->name('administration.assets.update');
 Route::inertia('carnet', 'carnet')->name('carnet');
+Route::inertia('registres', 'registres')->name('registres');

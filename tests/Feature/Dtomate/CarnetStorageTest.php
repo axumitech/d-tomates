@@ -16,8 +16,16 @@ class CarnetStorageTest extends TestCase
         $payload = json_encode(['meteo' => 'pluie', 'travaux' => []], JSON_THROW_ON_ERROR);
 
         $this->putJson('/api/carnet-storage', ['key' => 'dt:TOM:2026-08-27', 'value' => $payload])->assertUnauthorized();
+        $this->getJson('/api/carnet-storage/records')->assertUnauthorized();
         $this->withHeader('X-DTomate-Site-Code', '2026')->putJson('/api/carnet-storage', ['key' => 'dt:TOM:2026-08-27', 'value' => $payload])->assertOk();
         $this->withHeader('X-DTomate-Site-Code', '2026')->getJson('/api/carnet-storage/value?key=dt:TOM:2026-08-27')->assertOk()->assertJsonPath('value', $payload);
+        $this->withHeader('X-DTomate-Site-Code', '2026')->getJson('/api/carnet-storage/records')
+            ->assertOk()
+            ->assertJsonPath('records.0.key', 'dt:TOM:2026-08-27')
+            ->assertJsonPath('records.0.revision_count', 1);
+        $this->withHeader('X-DTomate-Site-Code', '2026')->getJson('/api/carnet-storage/history?key=dt:TOM:2026-08-27')
+            ->assertOk()
+            ->assertJsonCount(1, 'revisions');
         $this->withHeader('X-DTomate-Site-Code', '2026')->getJson('/api/carnet-storage?prefix=dt:TOM:')->assertOk()->assertJsonPath('keys.0', 'dt:TOM:2026-08-27');
         $this->assertSame(1, CarnetRecordRevision::count());
     }

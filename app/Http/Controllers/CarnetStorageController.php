@@ -31,7 +31,53 @@ final class CarnetStorageController extends Controller
         $this->validateKey($key);
         $record = CarnetRecord::query()->where('storage_key', $key)->first();
 
-        return response()->json(['value' => $record?->value, 'synced_at' => $record?->synced_at?->toIso8601String()]);
+        return response()->json([
+            'value' => $record?->value,
+            'checksum' => $record?->checksum,
+            'synced_at' => $record?->synced_at?->toIso8601String(),
+            'revision_count' => $record?->revisions()->count() ?? 0,
+        ]);
+    }
+
+    public function records(Request $request): JsonResponse
+    {
+        $this->authorizeSite($request);
+
+        $records = CarnetRecord::query()
+            ->withCount('revisions')
+            ->where('storage_key', 'not like', 'dt:acces:%')
+            ->latest('synced_at')
+            ->limit(2000)
+            ->get()
+            ->map(fn (CarnetRecord $record): array => [
+                'key' => $record->storage_key,
+                'checksum' => $record->checksum,
+                'synced_at' => $record->synced_at?->toIso8601String(),
+                'size_bytes' => strlen($record->value),
+                'revision_count' => $record->revisions_count,
+            ]);
+
+        return response()->json(['records' => $records]);
+    }
+
+    public function history(Request $request): JsonResponse
+    {
+        $this->authorizeSite($request);
+        $key = (string) $request->string('key');
+        $this->validateKey($key);
+
+        $revisions = CarnetRecordRevision::query()
+            ->where('storage_key', $key)
+            ->latest('created_at')
+            ->limit(100)
+            ->get(['id', 'checksum', 'created_at'])
+            ->map(fn (CarnetRecordRevision $revision): array => [
+                'id' => $revision->id,
+                'checksum' => $revision->checksum,
+                'created_at' => $revision->created_at?->toIso8601String(),
+            ]);
+
+        return response()->json(['revisions' => $revisions]);
     }
 
     public function store(Request $request): JsonResponse
