@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AdministrationController;
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\PilotageController;
@@ -13,6 +14,8 @@ Route::middleware('guest')->group(function (): void {
 Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
 
 Route::middleware('auth')->group(function (): void {
+    Route::get('/profil', [AccountController::class, 'show'])->name('account.profile');
+    Route::put('/profil/mot-de-passe', [AccountController::class, 'updatePassword'])->middleware('throttle:6,1')->name('account.password');
     Route::get('/', [PilotageController::class, 'index'])->name('home');
     Route::post('/pilotage/pointage', [PilotageController::class, 'storeAttendance'])->name('pilotage.attendance');
     Route::post('/pilotage/incidents', [PilotageController::class, 'storeIncident'])->name('pilotage.incidents');
