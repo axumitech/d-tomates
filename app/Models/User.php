@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Role;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\Auditable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -40,7 +41,11 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 class User extends Authenticatable implements PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
+    use Auditable;
+
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+
+    protected array $auditExclude = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'];
 
     /**
      * Get the attributes that should be cast.
@@ -81,6 +86,21 @@ class User extends Authenticatable implements PasskeyUser
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
+    }
+
+    public function approverFor(int $amount): ?self
+    {
+        $seen = [$this->id];
+        $manager = $this->manager;
+        while ($manager !== null && ! in_array($manager->id, $seen, true)) {
+            if ($manager->canApproveAmount($amount)) {
+                return $manager;
+            }
+            $seen[] = $manager->id;
+            $manager = $manager->manager;
+        }
+
+        return null;
     }
 
     public function department(): BelongsTo

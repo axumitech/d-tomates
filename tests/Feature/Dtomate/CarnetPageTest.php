@@ -2,11 +2,21 @@
 
 namespace Tests\Feature\Dtomate;
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CarnetPageTest extends TestCase
 {
-    public function test_anyone_with_the_site_code_can_open_the_field_notebook(): void
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actingAs(User::factory()->create());
+    }
+
+    public function test_authenticated_user_can_open_the_field_notebook(): void
     {
         $this->get(route('carnet'))->assertOk()->assertInertia(fn ($page) => $page->component('carnet'));
     }

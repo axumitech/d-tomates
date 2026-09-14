@@ -12,6 +12,8 @@ final class SchedulerHeartbeat extends Command
 {
     protected $signature = 'dtomate:scheduler-heartbeat';
 
+    protected $aliases = ['socle:health'];
+
     protected $description = 'Enregistre la preuve que l’ordonnanceur fonctionne.';
 
     public function handle(): int

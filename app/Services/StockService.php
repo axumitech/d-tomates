@@ -7,10 +7,10 @@ namespace App\Services;
 use App\Enums\MovementDirection;
 use App\Models\Item;
 use App\Models\StockMovement;
-use App\Models\Unit;
 use App\Models\User;
 use App\Models\Zone;
 use App\Support\ServerClock;
+use App\Support\UnitConverter;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -19,14 +19,13 @@ final class StockService
     /** @param array<string, int|string|null> $meta */
     public function record(Item $item, MovementDirection $direction, string $unitCode, float $quantity, ?User $by = null, array $meta = []): StockMovement
     {
-        if ($quantity <= 0) {
+        if (! is_finite($quantity) || $quantity <= 0) {
             throw new RuntimeException('La quantité doit être strictement positive.');
         }
-        $unit = Unit::query()->where('code', $unitCode)->firstOrFail();
-        if ($unit->dimension !== $item->dimension) {
-            throw new RuntimeException("Unité incompatible : {$unitCode} ne correspond pas à l'article {$item->code}.");
+        $base = UnitConverter::toBase($item, $unitCode, $quantity);
+        if ($base <= 0) {
+            throw new RuntimeException('La quantité est inférieure à une unité de base.');
         }
-        $base = (int) round($quantity * (float) $unit->factor_to_base);
 
         return DB::transaction(function () use ($item, $direction, $unitCode, $quantity, $by, $meta, $base) {
             if (isset($meta['zone_id'])) {
@@ -39,11 +38,31 @@ final class StockService
             if ($direction === MovementDirection::Out && $locked->balance_base < $base) {
                 throw new RuntimeException('Stock insuffisant.');
             }
-            $movement = StockMovement::query()->create(['item_id' => $locked->id, 'direction' => $direction, 'quantity_base' => $base, 'quantity_entered' => $quantity, 'unit_code_entered' => $unitCode, 'reason' => $meta['reason'] ?? 'non_precise', 'note' => $meta['note'] ?? null, 'zone_id' => $meta['zone_id'] ?? null, 'cost_centre_id' => $meta['cost_centre_id'] ?? null, 'performed_by' => $by?->id, 'work_date' => ($meta['work_date'] ?? ServerClock::today())->toDateString()]);
+            $movement = StockMovement::query()->create(['item_id' => $locked->id, 'reversal_of_id' => $meta['reversal_of_id'] ?? null, 'direction' => $direction, 'quantity_base' => $base, 'quantity_entered' => $quantity, 'unit_code_entered' => $unitCode, 'reason' => $meta['reason'] ?? 'non_precise', 'note' => $meta['note'] ?? null, 'zone_id' => $meta['zone_id'] ?? null, 'cost_centre_id' => $meta['cost_centre_id'] ?? null, 'performed_by' => $by?->id, 'work_date' => ($meta['work_date'] ?? ServerClock::today())->toDateString()]);
             $locked->balance_base = $locked->recomputeBalance();
             $locked->saveQuietly();
 
             return $movement;
+        });
+    }
+
+    public function reverse(StockMovement $movement, User $by, string $reason): StockMovement
+    {
+        if (trim($reason) === '') {
+            throw new RuntimeException('Le motif de correction est obligatoire.');
+        }
+
+        return DB::transaction(function () use ($movement, $by, $reason): StockMovement {
+            $item = Item::query()->lockForUpdate()->findOrFail($movement->item_id);
+            if (StockMovement::query()->where('reversal_of_id', $movement->id)->exists()) {
+                throw new RuntimeException('Ce mouvement a déjà été contrepassé.');
+            }
+
+            return $this->record($item,
+                $movement->direction === MovementDirection::In ? MovementDirection::Out : MovementDirection::In,
+                $item->dimension->baseUnitCode(), (float) $movement->quantity_base, $by,
+                ['reason' => 'Correction de stock', 'note' => $reason, 'reversal_of_id' => $movement->id,
+                    'zone_id' => $movement->zone_id, 'cost_centre_id' => $movement->cost_centre_id]);
         });
     }
 }

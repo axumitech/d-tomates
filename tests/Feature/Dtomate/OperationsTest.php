@@ -74,14 +74,14 @@ final class OperationsTest extends TestCase
         $site = Site::query()->create(['code' => 'NTETEMA', 'name' => 'Ntetema', 'timezone' => 'Africa/Lubumbashi']);
         $agent = User::factory()->create(['site_id' => $site->id]);
 
-        $this->post(route('pilotage.attendance'), [
+        $this->actingAs($agent)->post(route('pilotage.attendance'), [
             'user_id' => $agent->id,
             'status' => AttendanceStatus::Present->value,
             'hours' => 8,
             'site_code' => 'incorrect',
         ])->assertForbidden();
 
-        $this->post(route('pilotage.attendance'), [
+        $this->actingAs($agent)->post(route('pilotage.attendance'), [
             'user_id' => $agent->id,
             'status' => AttendanceStatus::Present->value,
             'hours' => 8,
@@ -124,6 +124,7 @@ final class OperationsTest extends TestCase
         $department = Department::query()->create(['site_id' => $site->id, 'code' => 'SER', 'name' => 'Serre']);
         $direction = User::factory()->create(['site_id' => $site->id, 'role' => Role::Direction]);
         $supervisor = User::factory()->create(['site_id' => $site->id, 'department_id' => $department->id, 'role' => Role::Superviseur]);
+        $this->actingAs($direction);
         $base = ['actor_id' => $direction->id, 'site_code' => (string) config('dtomate.site_access_code')];
 
         $this->patch(route('administration.users.update', $supervisor), $base + [

@@ -3,12 +3,19 @@
 namespace Tests\Feature\Dtomate;
 
 use App\Models\CarnetRecordRevision;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CarnetStorageTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actingAs(User::factory()->create());
+    }
 
     public function test_site_code_protects_and_persists_carnet_records(): void
     {

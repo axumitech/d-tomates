@@ -19,6 +19,7 @@ use App\Models\WorkOrderEvent;
 use App\Models\WorkOrderLabour;
 use App\Models\WorkOrderPart;
 use App\Support\ServerClock;
+use App\Support\UnitConverter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
@@ -164,7 +165,8 @@ final class WorkOrderService
                 'source_id' => $wo->id,
             ]);
 
-            $cout = (int) round($quantity * $item->unit_price_cents);
+            $pricedQuantity = UnitConverter::fromBase($item, $item->price_unit_code ?? $item->usage_unit_code, (int) $mouvement->quantity_base);
+            $cout = (int) round($pricedQuantity * $item->unit_price_cents);
 
             $ligne = WorkOrderPart::query()->create([
                 'work_order_id' => $wo->id,

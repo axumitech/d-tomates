@@ -1,5 +1,6 @@
 /* eslint-disable */
 // @ts-nocheck
+import SessionMenu from '@/components/session-menu';
 import React, { useState, useEffect, useRef } from "react";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -961,7 +962,7 @@ export default function Carnet() {
       try {
         const queue = JSON.parse(window.localStorage.getItem(pendingKey) || "{}");
         for (const [queuedKey, queuedValue] of Object.entries(queue)) {
-          const r = await fetch("/api/carnet-storage", { method: "PUT", headers: { "Content-Type": "application/json", "X-DTomate-Site-Code": codeSite }, body: JSON.stringify({ key: queuedKey, value: queuedValue }) });
+          const r = await fetch("/api/carnet-storage", { method: "PUT", headers: { "Content-Type": "application/json", "X-XSRF-TOKEN": decodeURIComponent(document.cookie.split("; ").find((cookie) => cookie.startsWith("XSRF-TOKEN="))?.slice(11) ?? ""), "X-DTomate-Site-Code": codeSite }, body: JSON.stringify({ key: queuedKey, value: queuedValue }) });
           if (!r.ok) throw new Error("Synchronisation différée");
           delete queue[queuedKey];
         }
@@ -2207,7 +2208,8 @@ export default function Carnet() {
   if (etape !== "ok") {
     return (
       <div className="carnet-app" style={{ minHeight: "100vh", background: C.paper, fontFamily: "Inter, sans-serif", color: C.ink }}>
-        <style>{FONTS}</style>
+        <SessionMenu />
+      <style>{FONTS}</style>
         <div style={{ background: C.green, padding: "28px 16px 24px" }}>
           <div style={{ fontFamily: OSW, fontSize: 12, letterSpacing: 2.4, color: "rgba(255,255,255,.78)",
             textTransform: "uppercase" }}>{SITE}</div>
@@ -2244,6 +2246,7 @@ export default function Carnet() {
 
   return (
     <div className="carnet-app" style={{ minHeight: "100vh", background: C.paper, fontFamily: "Inter, sans-serif", color: C.ink }}>
+      <SessionMenu />
       <style>{FONTS}</style>
 
       <div style={{ background: ACC, padding: "14px 16px 12px" }}>

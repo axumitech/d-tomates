@@ -14,7 +14,7 @@ class StockMovement extends Model
 
     public const UPDATED_AT = null;
 
-    protected $fillable = ['item_id', 'direction', 'quantity_base', 'quantity_entered', 'unit_code_entered', 'reason', 'note', 'zone_id', 'cost_centre_id', 'performed_by', 'work_date'];
+    protected $fillable = ['reversal_of_id', 'item_id', 'direction', 'quantity_base', 'quantity_entered', 'unit_code_entered', 'reason', 'note', 'zone_id', 'cost_centre_id', 'performed_by', 'work_date'];
 
     protected function casts(): array
     {

@@ -60,6 +60,7 @@ final class AttendanceService
                     'user_id' => $agent->id,
                 ]);
 
+            $taux = $attendance->exists ? (int) $attendance->daily_rate_cents : $taux;
             $attendance->fill([
                 'status' => $status,
                 'hours' => $heures,
