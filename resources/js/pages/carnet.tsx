@@ -4,7 +4,7 @@ import SessionMenu from '@/components/session-menu';
 import React, { useState, useEffect, useRef } from "react";
 
 /* ═══════════════════════════════════════════════════════════════
-   CARNET DE FERME — LA FERME D'TOMATE                version 3.0
+   CARNET DE FERME — LA FERME D'TOMATE                version 5.6
    SADC SUPPLY CONGO SARL — succursale D'Tomate
    Ntetema, Route Kinsevere, Haut-Katanga, RDC
    Propriétaire : M. Christophe LOSEMBE
@@ -19,15 +19,16 @@ import React, { useState, useEffect, useRef } from "react";
    SSO Microsoft Entra ID.
    ═══════════════════════════════════════════════════════════════ */
 
-const APP_VERSION = "5.3";
+const APP_VERSION = "5.6";
 /* Le schéma de données ne change JAMAIS de nom de clé entre deux versions.
    Toute version ultérieure doit lire les clés existantes, jamais les écraser :
    les seeds ne s'appliquent qu'aux clés absentes, et les catalogues se
    complètent par fusion. C'est ce qui permet de mettre à jour l'application
    sans perdre une seule journée de carnet. */
 const SCHEMA = 3;
-const APP_DATE = "25 août 2026";
+const APP_DATE = "17 septembre 2026";
 const HISTORIQUE_VERSIONS = [
+  ["5.6", "Intégration du socle : import des sauvegardes, diagnostic, protection des registres et corrections du stock et du pointage. Accès authentifié et espace profil avec changement de mot de passe."],
   ["5.3", "Conservation des données entre versions : fusion non destructive des catalogues, archivage mensuel du journal et des mouvements au lieu de leur troncature, sauvegarde et restauration intégrales en JSON."],
   ["5.2", "Export CSV sur une période, sauvegarde complète en un fichier, téléchargement fiabilisé avec repli en copier-coller si le navigateur le bloque."],
   ["5.1", "Numéro de version affiché partout. Alertes de stock recalculées en direct et déplacées dans un registre dédié : seuls les articles réellement mouvementés déclenchent une alerte."],
