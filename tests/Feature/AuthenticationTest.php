@@ -80,6 +80,20 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_default_password_is_accepted_only_in_local_environment(): void
+    {
+        $user = User::factory()->create(['password' => Hash::make('password')]);
+        $this->app['env'] = 'production';
+        $this->withSession(['_token' => 'test-csrf-token']);
+        $this->post('/login', ['email' => $user->email, 'password' => 'password', '_token' => 'test-csrf-token'])->assertSessionHasErrors('email');
+        $this->assertGuest();
+
+        $this->app['env'] = 'local';
+        $this->withSession(['_token' => 'test-csrf-token']);
+        $this->post('/login', ['email' => $user->email, 'password' => 'password', '_token' => 'test-csrf-token'])->assertRedirect('/');
+        $this->assertAuthenticatedAs($user);
+    }
+
     public function test_login_is_throttled_and_registration_is_not_public(): void
     {
         for ($attempt = 0; $attempt < 5; $attempt++) {

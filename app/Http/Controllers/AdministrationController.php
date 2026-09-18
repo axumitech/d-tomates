@@ -19,7 +19,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 use RuntimeException;
@@ -29,6 +31,7 @@ final class AdministrationController extends Controller
     public function index(): Response
     {
         return Inertia::render('administration', [
+            'can_manage_users' => Gate::allows('create', User::class),
             'staff' => User::query()->with(['department:id,name', 'manager:id,name'])->orderBy('name')->get()->map(fn (User $user): array => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -86,12 +89,14 @@ final class AdministrationController extends Controller
 
     public function storeUser(Request $request): RedirectResponse
     {
-        [$actor, $data] = $this->validatedAdmin($request, [
+        $actor = $request->user();
+        Gate::forUser($actor)->authorize('create', User::class);
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:10'],
+            'password' => ['required', 'string', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()],
             ...$this->userRules(),
-        ]);
+        ], $this->passwordMessages());
 
         return $this->perform(function () use ($actor, $data): string {
             Gate::forUser($actor)->authorize('create', User::class);
@@ -108,12 +113,14 @@ final class AdministrationController extends Controller
 
     public function updateUser(Request $request, User $user): RedirectResponse
     {
-        [$actor, $data] = $this->validatedAdmin($request, [
+        $actor = $request->user();
+        Gate::forUser($actor)->authorize('update', $user);
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'password' => ['nullable', 'string', 'min:10'],
+            'password' => ['nullable', 'string', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()],
             ...$this->userRules(),
-        ]);
+        ], $this->passwordMessages());
 
         return $this->perform(function () use ($actor, $data, $user): string {
             Gate::forUser($actor)->authorize('update', $user);
@@ -128,10 +135,13 @@ final class AdministrationController extends Controller
             $payload = $this->userPayload($data) + ['name' => $data['name'], 'email' => $data['email']];
             if (! empty($data['password'])) {
                 $payload['password'] = Hash::make((string) $data['password']);
+                $user->remember_token = Str::random(60);
             }
             $user->update($payload);
 
-            return "Le profil de {$user->name} a été mis à jour.";
+            return ! empty($data['password'])
+                ? "Le profil et le mot de passe de {$user->name} ont été mis à jour."
+                : "Le profil de {$user->name} a été mis à jour.";
         });
     }
 
@@ -157,6 +167,19 @@ final class AdministrationController extends Controller
 
             return "Le bien {$asset->code} a été mis à jour.";
         });
+    }
+
+    /** @return array<string, string> */
+    private function passwordMessages(): array
+    {
+        return [
+            'password.required' => 'Saisissez un mot de passe pour créer le compte.',
+            'password.confirmed' => 'Les deux mots de passe ne correspondent pas.',
+            'password.min' => 'Utilisez au moins 12 caractères.',
+            'password.mixed' => 'Ajoutez une majuscule et une minuscule.',
+            'password.numbers' => 'Ajoutez au moins un chiffre.',
+            'password.symbols' => 'Ajoutez au moins un symbole.',
+        ];
     }
 
     /** @return array<string, mixed> */

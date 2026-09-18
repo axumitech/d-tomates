@@ -20,7 +20,7 @@ final class SessionController extends Controller
         ]);
         $user = User::where('email', $credentials['email'])->first();
         if (! $user || ! Hash::check($credentials['password'], $user->password)
-            || $credentials['password'] === 'password' || ! $user->isActive()) {
+            || ($credentials['password'] === 'password' && ! app()->environment('local')) || ! $user->isActive()) {
             throw ValidationException::withMessages(['email' => 'Identifiants incorrects ou compte indisponible.']);
         }
 

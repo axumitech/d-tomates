@@ -83,6 +83,7 @@ type Asset = {
     open_work_orders: number;
 };
 type Props = {
+    can_manage_users: boolean;
     staff: Staff[];
     assets: Asset[];
     sites: Array<{ id: number; code: string; name: string }>;
@@ -187,13 +188,12 @@ function AdminAccess({
 }
 
 function StaffDialog({ user, props }: { user?: Staff; props: Props }) {
-    const directions = props.staff.filter(
-        (entry) => entry.active && entry.role === 'direction',
-    );
+    const [open, setOpen] = useState(false);
     const form = useForm({
         name: user?.name ?? '',
         email: user?.email ?? '',
         password: '',
+        password_confirmation: '',
         role: user?.role ?? 'agent',
         job_title: user?.job_title ?? '',
         site_id: String(user?.site_id ?? props.sites[0]?.id ?? ''),
@@ -204,22 +204,38 @@ function StaffDialog({ user, props }: { user?: Staff; props: Props }) {
         employed_from: user?.employed_from ?? '',
         employed_until: user?.employed_until ?? '',
         is_field_only: user?.is_field_only ?? true,
-        actor_id: '',
-        site_code: '',
         operation: '',
     });
     const managers = props.staff.filter(
         (entry) => entry.active && entry.id !== user?.id,
     );
+    const onSuccess = () => {
+        form.reset('password', 'password_confirmation');
+        setOpen(false);
+    };
     const submit = () =>
         user
             ? form.patch(`/administration/equipe/${user.id}`, {
                   preserveScroll: true,
+                  onSuccess,
               })
-            : form.post('/administration/equipe', { preserveScroll: true });
+            : form.post('/administration/equipe', {
+                  preserveScroll: true,
+                  onSuccess,
+              });
 
     return (
-        <Dialog>
+        <Dialog
+            open={open}
+            onOpenChange={(value) => {
+                setOpen(value);
+
+                if (!value) {
+                    form.reset('password', 'password_confirmation');
+                    form.clearErrors();
+                }
+            }}
+        >
             <DialogTrigger asChild>
                 {user ? (
                     <Button size="sm" variant="ghost">
@@ -271,19 +287,57 @@ function StaffDialog({ user, props }: { user?: Staff; props: Props }) {
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label>
+                            <Label
+                                htmlFor={`staff-password-${user?.id ?? 'new'}`}
+                            >
                                 {user
-                                    ? 'Nouveau mot de passe (facultatif)'
-                                    : 'Mot de passe temporaire'}
+                                    ? 'Définir ou remplacer le mot de passe'
+                                    : 'Mot de passe'}
                             </Label>
                             <Input
+                                id={`staff-password-${user?.id ?? 'new'}`}
                                 type="password"
+                                autoComplete="new-password"
+                                minLength={12}
+                                required={!user}
                                 value={form.data.password}
                                 onChange={(event) =>
                                     form.setData('password', event.target.value)
                                 }
                             />
                         </div>
+                        <div className="grid gap-2">
+                            <Label
+                                htmlFor={`staff-password-confirmation-${user?.id ?? 'new'}`}
+                            >
+                                Confirmer le mot de passe
+                            </Label>
+                            <Input
+                                id={`staff-password-confirmation-${user?.id ?? 'new'}`}
+                                type="password"
+                                autoComplete="new-password"
+                                required={!user || Boolean(form.data.password)}
+                                value={form.data.password_confirmation}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'password_confirmation',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        </div>
+                        <p className="text-sm text-muted-foreground sm:col-span-2">
+                            Au moins 12 caractères, avec majuscule, minuscule,
+                            chiffre et symbole.
+                            {user &&
+                                ' Laissez les champs vides pour conserver le mot de passe actuel. Aucun ancien mot de passe n’est nécessaire.'}
+                        </p>
+                        {user && !user.active && (
+                            <p className="text-sm text-amber-700 sm:col-span-2">
+                                Ce compte est inactif. Vérifiez aussi les dates
+                                d’emploi pour permettre la connexion.
+                            </p>
+                        )}
                         <div className="grid gap-2">
                             <Label>Fonction</Label>
                             <Input
@@ -399,17 +453,17 @@ function StaffDialog({ user, props }: { user?: Staff; props: Props }) {
                         />{' '}
                         Compte principalement utilisé sur le terrain
                     </label>
-                    <AdminAccess
-                        actor={form.data.actor_id}
-                        code={form.data.site_code}
-                        directions={directions}
-                        onActor={(value) => form.setData('actor_id', value)}
-                        onCode={(value) => form.setData('site_code', value)}
-                    />
-                    {form.errors.operation && (
-                        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                            {form.errors.operation}
-                        </p>
+                    {Object.keys(form.errors).length > 0 && (
+                        <div
+                            role="alert"
+                            className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+                        >
+                            {Object.entries(form.errors).map(
+                                ([field, message]) => (
+                                    <p key={field}>{message}</p>
+                                ),
+                            )}
+                        </div>
                     )}
                     <DialogFooter>
                         <Button
@@ -417,8 +471,7 @@ function StaffDialog({ user, props }: { user?: Staff; props: Props }) {
                             disabled={
                                 form.processing ||
                                 !form.data.name ||
-                                !form.data.email ||
-                                !form.data.actor_id
+                                !form.data.email
                             }
                         >
                             {form.processing
@@ -750,7 +803,9 @@ export default function Administration(props: Props) {
                             </div>
                             <div>
                                 {tab === 'staff' ? (
-                                    <StaffDialog props={props} />
+                                    props.can_manage_users && (
+                                        <StaffDialog props={props} />
+                                    )
                                 ) : (
                                     <AssetDialog props={props} />
                                 )}
@@ -955,10 +1010,12 @@ export default function Administration(props: Props) {
                                                     </Badge>
                                                 </td>
                                                 <td className="px-5 py-4 text-right">
-                                                    <StaffDialog
-                                                        user={user}
-                                                        props={props}
-                                                    />
+                                                    {props.can_manage_users && (
+                                                        <StaffDialog
+                                                            user={user}
+                                                            props={props}
+                                                        />
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
