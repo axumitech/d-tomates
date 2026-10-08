@@ -1,5 +1,6 @@
 /* eslint-disable */
 // @ts-nocheck
+import { usePage } from '@inertiajs/react';
 import SessionMenu from '@/components/session-menu';
 import React, { useState, useEffect, useRef } from "react";
 
@@ -702,8 +703,8 @@ function phaseDe(type, j) {
   const p = c.phases.find(([a, b]) => j >= a && j <= b);
   return p ? p[2] : "";
 }
-function tachesDues(zone, culture, date, regTaches) {
-  const cat = CULTURES[culture.type]; if (!cat) return [];
+function tachesDues(zone, culture, date, regTaches, catalogue = CULTURES) {
+  const cat = catalogue[culture.type]; if (!cat) return [];
   const j = jours(culture.debut, date);
   if (j < 0) return [];
   const d = dow(date), out = [];
@@ -721,8 +722,7 @@ function tachesDues(zone, culture, date, regTaches) {
       if (ec >= 10) { due = true; retard = ec - 7; }
     } else if (t.freq === "periode") {
       rythme = `tous les ${t.periode} jours`;
-      const ec = last ? jours(last, date) : j - (t.min || 0);
-      if (ec >= t.periode) { due = true; retard = ec - t.periode; }
+      due = (j - (t.min || 0)) % t.periode === 0;
     } else if (t.freq === "unique") {
       rythme = "une seule fois";
       if (!last) due = true;
@@ -871,7 +871,18 @@ function BlocPlan({ zone, cultures, date, onOuvrir, couleur }) {
 }
 
 /* ═══════════════ APPLICATION ═══════════════ */
+const CULTURES_BASE = CULTURES;
 export default function Carnet() {
+  const { taskTemplates = [], auth } = usePage().props;
+  const CULTURES = Object.fromEntries(Object.entries(CULTURES_BASE).map(([type, config]) => {
+    const rules = taskTemplates.filter((t) => t.crop_type === type);
+    return [type, { ...config, taches: rules.length ? rules.filter((t) => t.is_active).map((t) => ({
+      id: t.task_key, nom: t.title, detail: t.instructions, cat: t.category, freq: t.frequency,
+      min: t.min_day, max: t.max_day ?? undefined, jour: t.weekday, periode: t.interval_days,
+    })) : config.taches }];
+  }));
+  const [tachesServeur, setTachesServeur] = useState(null);
+  const [erreurTaches, setErreurTaches] = useState("");
   /* accès */
   const [etape, setEtape] = useState(() => window.localStorage.getItem("dtomate:access:agent") ? "ok" : window.localStorage.getItem("dtomate:access:site-approved") === CODE_SITE_DEFAUT ? "agent" : "site");
   const [codeSite, setCodeSite] = useState(CODE_SITE_DEFAUT);
@@ -884,6 +895,15 @@ export default function Carnet() {
   /* navigation */
   const [bureau, setBureau] = useState("TOM");
   const [date, setDate] = useState(auj());
+  useEffect(() => {
+    const controller = new AbortController();
+    setTachesServeur(null); setErreurTaches("");
+    fetch(`/taches/synthese?date=${encodeURIComponent(date)}`, { credentials: "same-origin", headers: { Accept: "application/json" }, signal: controller.signal })
+      .then((r) => { if (!r.ok) throw new Error("Suivi des tâches indisponible"); return r.json(); })
+      .then((data) => { setTachesServeur(data.tasks); setRegTaches(data.lastExecutions || {}); })
+      .catch((error) => { if (error.name !== "AbortError") setErreurTaches("Le suivi des tâches n'a pas pu être chargé. Ouvrez l'espace Tâches quotidiennes."); });
+    return () => controller.abort();
+  }, [date]);
   const [onglet, setOnglet] = useState("accueil");
   const [sousPage, setSousPage] = useState("");
   const [etat, setEtat] = useState("");
@@ -1017,7 +1037,7 @@ export default function Carnet() {
     const cs = await lire("dt:acces:site", null);
     if (cs) setCodeSite(cs); else await ecrire("dt:acces:site", CODE_SITE_DEFAUT);
     let cu = await lire("dt:reg:cultures", null);
-    if (!cu) { cu = CULTURES_INITIALES; await ecrire("dt:reg:cultures", cu); }
+    if (!cu) { cu = CULTURES_INITIALES; if (auth?.user?.role === "direction") await ecrire("dt:reg:cultures", cu); }
     setCultures(cu);
     /* Fusion du catalogue : les articles déjà connus gardent leur stock, leur
        prix et leur seuil ; seuls les articles nouveaux de cette version sont
@@ -1040,7 +1060,7 @@ export default function Carnet() {
     m.schema = SCHEMA; m.derniere = auj();
     await ecrire("dt:meta", m); setMeta(m);
     setArchives(await lire("dt:reg:archives", []));
-    setRegTaches(await lire("dt:reg:taches", {}));
+    // Les dernières exécutions proviennent du serveur et de ses preuves, pas des anciens clics FAIT.
     setDar(await lire("dt:reg:dar", {}));
     setCendres(await lire("dt:reg:cendres", {}));
     setJournal(await lire("dt:journal", []));
@@ -1393,7 +1413,7 @@ export default function Carnet() {
   const horsCalendrier = (z, famille) => {
     const c = cultures[z]; if (!c) return false;
     const cats = CAT_ACTION[famille] || [famille];
-    const dues = tachesDues(z, c, date, regTaches).filter((t) => cats.indexOf(t.cat) >= 0 && t.due);
+    const dues = tachesDues(z, c, date, regTaches, CULTURES).filter((t) => cats.indexOf(t.cat) >= 0 && t.due);
     if (dues.length) return false;
     const cat = CULTURES[c.type];
     const j = jours(c.debut, date);
@@ -1430,19 +1450,11 @@ export default function Carnet() {
   const retirer = (liste, set, i, champ, libelle) => {
     const n = liste.filter((_, k) => k !== i); set(n); sauver({ [champ]: n }); noter("Retrait", libelle);
   };
-  const marquerTache = async (zone, t, fait) => {
-    if (fait) {
-      const n = { ...regTaches, [t.cle]: date }; setRegTaches(n); await ecrire("dt:reg:taches", n);
-      const l = [...tachesFaites, { zone, id: t.id, nom: t.nom, qui: courtNom(agent), h: heure() }];
-      setTachesFaites(l); sauver({ tachesFaites: l });
-      noter("Tâche faite", `${zone} — ${t.nom}`); flash(`${t.nom} : fait`);
-    } else {
-      const l = [...problemes, { ou: zone, quoi: `Tâche non exécutée : ${t.nom}`, gravite: "À surveiller", photos: [] }];
-      setProblemes(l); sauver({ problemes: l });
-      noter("Tâche non faite", `${zone} — ${t.nom}`); flash("Signalé comme non exécutée");
-    }
+  const marquerTache = () => {
+    window.location.assign(`/taches?date=${encodeURIComponent(date)}`);
   };
   const installerCulture = async () => {
+    if (auth?.user?.role !== "direction") { flash("Seule la direction peut modifier le registre des cultures.", 5000); return; }
     if (!cu.zone || !cu.type || !cu.debut) { flash("Zone, culture et date de départ sont obligatoires", 4000); return; }
     if (cultures[cu.zone]) { flash("Cette zone porte déjà une culture. Clôturez d'abord le cycle en cours.", 5000); return; }
     const n = { ...cultures, [cu.zone]: { type: cu.type, debut: cu.debut, effectif: cu.effectif, note: cu.note, aConfirmer: false } };
@@ -1452,6 +1464,7 @@ export default function Carnet() {
     setCu(vCu); flash("Culture installée, compteurs remis à zéro");
   };
   const cloturerCulture = async (zone) => {
+    if (auth?.user?.role !== "direction") { flash("Seule la direction peut modifier le registre des cultures.", 5000); return; }
     const c = cultures[zone]; if (!c) return;
     const cm = cumul[zone] || {};
     const a = [{ zone, ...c, fin: date, par: courtNom(agent), bilan: cm }, ...archives];
@@ -1463,6 +1476,7 @@ export default function Carnet() {
     flash(`${zone} : cycle clôturé, la zone est libre`);
   };
   const confirmerDate = async (zone, d) => {
+    if (auth?.user?.role !== "direction") { flash("Seule la direction peut modifier le registre des cultures.", 5000); return; }
     const n = { ...cultures, [zone]: { ...cultures[zone], debut: d, aConfirmer: false } };
     setCultures(n); await ecrire("dt:reg:cultures", n);
     noter("Date confirmée", `${zone} — départ ${d}`); flash("Date de départ confirmée");
@@ -2031,9 +2045,13 @@ export default function Carnet() {
         if (b.kg) L.push(`      cumul ${b.kg} kg · ${Math.round(b.rdt * 100) / 100} ${CULTURES[c.type].uniteCible} (${b.pctCible} % de la cible) · ${usd(b.coutKg)} ${DEVISE}/kg`);
       });
       L.push("");
-      L.push("TÂCHES DU CALENDRIER EXÉCUTÉES");
-      tachesFaites.length ? tachesFaites.forEach((t, i) => L.push(`  ${i + 1}. ${t.zone} — ${t.nom} — ${t.qui} à ${t.h}`))
-        : L.push("  (aucune)");
+      L.push("SUIVI DES TÂCHES ATTRIBUÉES — PREUVES ET JUSTIFICATIONS");
+      if (tachesServeur === null) L.push("  Suivi indisponible : consulter l'espace Tâches quotidiennes.");
+      else {
+        const suivies = tachesServeur.filter((t) => zonesBureau.includes(t.zone));
+        suivies.length ? suivies.forEach((t, i) => L.push(`  ${i + 1}. ${t.zone} — ${t.nom} — ${t.qui} — ${t.status === "done" ? `EXÉCUTION VALIDÉE (${t.photos} photo(s)) à ${t.h}` : t.status === "justified" ? `NON EXÉCUTÉE / JUSTIFIÉE : ${t.justification}` : t.status === "pending_review" ? "PREUVE À VALIDER" : t.status === "correction_requested" ? "CORRECTION ATTENDUE" : "NON EXÉCUTÉE / SANS RÉPONSE"} — journée ${t.work_date}`)) : L.push("  Aucune tâche générée visible. Faire vérifier la génération et les attributions par le responsable.");
+        L.push(`  Preuves et rapport complet : ${window.location.origin}/taches?date=${date}`);
+      }
       L.push("");
     }
     const bloc = (titre, liste, fmt) => {
@@ -2120,7 +2138,7 @@ export default function Carnet() {
     perimeBientot.forEach((a) => al.push(`${a.nom} périme le ${a.peremption}.`));
     regimesRetard.forEach((r) => al.push(`${r.parc} — ruban ${r.ruban} : ${r.nb - r.coupes} régime(s) dépassent la date de coupe du ${r.prevision}.`));
     zonesBureau.filter((z) => cultures[z]).forEach((z) =>
-      tachesDues(z, cultures[z], date, regTaches).filter((t) => t.retard > 0)
+      tachesDues(z, cultures[z], date, regTaches, CULTURES).filter((t) => t.retard > 0)
         .forEach((t) => al.push(`${z} — ${t.nom} : ${t.retard} jour(s) de retard.`)));
     anomalies.filter((a) => a.gravite !== "donnee").forEach((a) => al.push(`${a.zone} — ${a.texte}`));
     demandesAvalider.forEach((d) => al.push(`Demande ${d.id} (${d.type}, ${usd(montantDemande(d))} ${DEVISE}) en attente chez ${courtNom(d.validateur)}.`));
@@ -2351,6 +2369,10 @@ export default function Carnet() {
               Contrôlée ». N'écrivez jamais « hydroponique » : nos tomates poussent en pleine terre.</Note>
           ) : (<>
             <Titre couleur={ACC}>TRAVAIL DU JOUR</Titre>
+            <Note>Les tâches ci-dessous proviennent du suivi quotidien du serveur. Attribution, photos, justifications et rappels : <a href={`/taches?date=${date}`} style={{ fontWeight: 700, textDecoration: "underline" }}>ouvrir les tâches quotidiennes</a>.
+              {erreurTaches && <div>{erreurTaches}</div>}
+              {tachesServeur === null && !erreurTaches && <div>Chargement du suivi…</div>}
+            </Note>
             {zonesBureau.map((z) => {
               const c = cultures[z];
               if (!c) return <Card key={z} tone={C.gris}>
@@ -2360,7 +2382,10 @@ export default function Carnet() {
                   Installer une culture</Bouton>
               </Card>;
               const j = jours(c.debut, date);
-              const dues = tachesDues(z, c, date, regTaches);
+              const dues = (tachesServeur || []).filter((t) => t.zone === z).map((t) => ({ ...t,
+                faitAuj: t.status === "done", cat: t.status === "justified" ? "Non exécutée / justifiée" : t.status === "done" ? "Exécution validée" : t.status === "pending_review" ? "Preuve à valider" : t.status === "correction_requested" ? "Preuve à corriger" : "Sans réponse",
+                rythme: `Responsable : ${t.qui} · journée ${t.work_date}`, dernier: "", retard: t.status === "todo" ? Math.max(0, jours(t.work_date, date)) : 0,
+              }));
               const enRetard = dues.filter((t) => t.retard > 0).length;
               return <div key={z} style={{ marginBottom: 18 }}>
                 <div style={{ background: enRetard ? C.red : ACC, color: "#fff", padding: "12px 14px",
@@ -2382,7 +2407,7 @@ export default function Carnet() {
                 </div>}
                 <div style={{ background: "#fff", border: `1px solid ${C.line}`, borderTop: "none",
                   borderRadius: "0 0 4px 4px", padding: 12 }}>
-                  {!dues.length && <div style={{ fontSize: 15, color: C.gris }}>Rien de prévu au calendrier aujourd'hui.</div>}
+                  {!dues.length && <div style={{ fontSize: 15, color: C.gris }}>Aucune tâche générée visible. Le responsable doit vérifier les attributions dans l'espace Tâches quotidiennes.</div>}
                   {dues.map((t) => (
                     <div key={t.id} style={{ borderTop: `1px solid ${C.line}`, padding: "12px 0", opacity: t.faitAuj ? 0.55 : 1 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
@@ -2395,14 +2420,15 @@ export default function Carnet() {
                         {t.rythme}{t.dernier ? ` · dernier passage le ${t.dernier}` : " · jamais fait"}
                         {t.retard > 0 ? ` · ${t.retard} jour(s) de retard` : ""}</div>
                       <div style={{ fontSize: 14.5, marginTop: 6, lineHeight: 1.5 }}>{t.detail}</div>
-                      {!t.faitAuj && <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                      {t.justification && <div style={{ fontSize: 14, marginTop: 6 }}>Justification : {t.justification}</div>}
+                      {["todo", "correction_requested"].includes(t.status) && <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                         <button onClick={() => marquerTache(z, t, true)}
                           style={{ flex: 2, padding: 12, background: C.green, color: "#fff", border: "none",
                             borderRadius: 4, fontFamily: OSW, fontSize: 15, fontWeight: 700, letterSpacing: 0.6,
-                            cursor: "pointer" }}>FAIT</button>
+                            cursor: "pointer" }}>DÉPOSER UNE PREUVE</button>
                         <button onClick={() => marquerTache(z, t, false)}
                           style={{ flex: 1, padding: 12, background: "#fff", color: C.red, border: `2px solid ${C.red}`,
-                            borderRadius: 4, fontFamily: OSW, fontSize: 15, fontWeight: 700, cursor: "pointer" }}>PAS FAIT</button>
+                            borderRadius: 4, fontFamily: OSW, fontSize: 15, fontWeight: 700, cursor: "pointer" }}>JUSTIFIER</button>
                       </div>}
                     </div>))}
                 </div>
@@ -2418,7 +2444,7 @@ export default function Carnet() {
           {[0, 1, 2, 3, 4, 5, 6].map((k) => {
             const d = plusJours(date, k);
             const lignes = zonesBureau.filter((z) => cultures[z])
-              .map((z) => ({ zone: z, taches: tachesDues(z, cultures[z], d, regTaches).filter((t) => t.due) }))
+              .map((z) => ({ zone: z, taches: tachesDues(z, cultures[z], d, regTaches, CULTURES).filter((t) => t.due) }))
               .filter((x) => x.taches.length);
             const nb = lignes.reduce((s, x) => s + x.taches.length, 0);
             return <div key={d} style={{ marginBottom: 12 }}>

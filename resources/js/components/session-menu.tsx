@@ -12,6 +12,12 @@ export default function SessionMenu() {
         <div className="flex items-center justify-end gap-3 border-b bg-white px-4 py-2 text-sm text-slate-700">
             <span>{auth.user.name}</span>
             <Link
+                href="/taches"
+                className="rounded border px-3 py-1 font-medium hover:bg-emerald-50"
+            >
+                Mes tâches et rappels
+            </Link>
+            <Link
                 href="/profil"
                 className="rounded border px-3 py-1 font-medium hover:bg-emerald-50"
             >

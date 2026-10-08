@@ -9,6 +9,7 @@ class Department extends Model
 {
     protected $fillable = ['site_id', 'code', 'name'];
 
+    /** @return BelongsTo<Site, $this> */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);

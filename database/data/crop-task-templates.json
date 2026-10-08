@@ -1,0 +1,1230 @@
+{
+  "Tomate Trinity F1": [
+    {
+      "id": "tour",
+      "nom": "Tour de serre",
+      "freq": "jour",
+      "cat": "Contrôle",
+      "detail": "Vérifier la reprise des plants, la température et la ventilation. Au-dessus de 28 °C : ouvrir la ventilation et déployer l'ombrière."
+    },
+    {
+      "id": "ombrage",
+      "nom": "Ombrage des 3 premiers jours",
+      "freq": "jour",
+      "min": 0,
+      "max": 3,
+      "cat": "Contrôle",
+      "detail": "Ombrage 50 % sur les plants fraîchement repiqués."
+    },
+    {
+      "id": "ficelles",
+      "nom": "Fixation des ficelles de palissage",
+      "freq": "unique",
+      "min": 3,
+      "max": 12,
+      "cat": "Conduite",
+      "detail": "Une ficelle par tige. Nœud lâche au collet, jamais serré."
+    },
+    {
+      "id": "fertA",
+      "nom": "Fertigation — lundi",
+      "freq": "sem",
+      "jour": 1,
+      "min": 1,
+      "max": 49,
+      "cat": "Fertigation",
+      "detail": "Bac A : Ca(NO₃)₂ 4,2 kg + KNO₃ 5,5 kg / 200 L. Bac B : MAP 2,4 kg + MgSO₄ 1,2 kg / 200 L. EC 1,6–2,0, pH 5,8–6,2. NE JAMAIS mélanger A et B."
+    },
+    {
+      "id": "fertA2",
+      "nom": "Fertigation — jeudi",
+      "freq": "sem",
+      "jour": 4,
+      "min": 1,
+      "max": 49,
+      "cat": "Fertigation",
+      "detail": "Même préparation que le lundi. Deuxième injection de la semaine."
+    },
+    {
+      "id": "fertB",
+      "nom": "Fertigation — lundi (floraison)",
+      "freq": "sem",
+      "jour": 1,
+      "min": 50,
+      "max": 91,
+      "cat": "Fertigation",
+      "detail": "Bac A : Ca(NO₃)₂ 8,5 kg + KNO₃ 8 kg / 300 L. Bac B : MAP 2,5 kg + MgSO₄ 3,5 kg / 300 L. EC 2,0–2,3. Doses doublées."
+    },
+    {
+      "id": "fertB2",
+      "nom": "Fertigation — jeudi (floraison)",
+      "freq": "sem",
+      "jour": 4,
+      "min": 50,
+      "max": 91,
+      "cat": "Fertigation",
+      "detail": "Même préparation que le lundi."
+    },
+    {
+      "id": "fertC",
+      "nom": "Fertigation — lundi (récolte)",
+      "freq": "sem",
+      "jour": 1,
+      "min": 92,
+      "cat": "Fertigation",
+      "detail": "Bac A : Ca(NO₃)₂ 7 kg + KNO₃ 12 kg / 300 L. Bac B : MAP 2,5 kg + K₂SO₄ 4 kg + MgSO₄ 2 kg / 300 L. EC 2,2–2,5. Le potassium remplit les fruits."
+    },
+    {
+      "id": "fertC2",
+      "nom": "Fertigation — jeudi (récolte)",
+      "freq": "sem",
+      "jour": 4,
+      "min": 92,
+      "cat": "Fertigation",
+      "detail": "Même préparation que le lundi."
+    },
+    {
+      "id": "taille",
+      "nom": "Taille — retirer les gourmands",
+      "freq": "sem",
+      "jour": 2,
+      "min": 7,
+      "cat": "Conduite",
+      "detail": "Retirer tous les gourmands sauf la 2e tige. Désinfecter le sécateur à l'alcool 70 % entre chaque plant."
+    },
+    {
+      "id": "effeuil",
+      "nom": "Effeuillage bas",
+      "freq": "sem",
+      "jour": 2,
+      "min": 50,
+      "cat": "Conduite",
+      "detail": "Enlever 2 à 3 feuilles sous le dernier bouquet récolté. L'air circule, le Botrytis recule."
+    },
+    {
+      "id": "baisser",
+      "nom": "Baisser et pencher les plants",
+      "freq": "sem",
+      "jour": 2,
+      "min": 60,
+      "cat": "Conduite",
+      "detail": "Descendre les tiges le long de la ficelle pour garder la tête à hauteur de travail."
+    },
+    {
+      "id": "irrM",
+      "nom": "Irrigation eau claire — mercredi",
+      "freq": "sem",
+      "jour": 3,
+      "min": 1,
+      "cat": "Irrigation",
+      "detail": "Eau claire, pas de fertigation. 2–4 L/plant jusqu'à J49, 4–6 L en floraison, 6–8 L en récolte."
+    },
+    {
+      "id": "irrS",
+      "nom": "Irrigation eau claire — samedi",
+      "freq": "sem",
+      "jour": 6,
+      "min": 1,
+      "cat": "Irrigation",
+      "detail": "Eau claire. Relever les data loggers."
+    },
+    {
+      "id": "irrD",
+      "nom": "Irrigation eau claire — dimanche",
+      "freq": "sem",
+      "jour": 0,
+      "min": 1,
+      "cat": "Irrigation",
+      "detail": "Eau claire. Ne pas arroser après 14 h en saison des pluies."
+    },
+    {
+      "id": "scout",
+      "nom": "Scouting — vendredi matin",
+      "freq": "sem",
+      "jour": 5,
+      "min": 7,
+      "cat": "Surveillance",
+      "detail": "50 plants par module, dessous des feuilles. Relever les pièges jaunes. Plus de 10 aleurodes par piège : traiter."
+    },
+    {
+      "id": "fongi",
+      "nom": "Pulvérisation fongicide — vendredi soir",
+      "freq": "sem",
+      "jour": 5,
+      "min": 7,
+      "cat": "Phyto",
+      "detail": "Semaine impaire : chlorothalonil 2 g/L (FRAC M5). Semaine paire : azoxystrobine 0,8 mL/L + difénoconazole 0,5 mL/L (FRAC 11+3). EPI obligatoires, délai de rentrée 24 h. En récolte, vérifier le DAR."
+    },
+    {
+      "id": "foliCa",
+      "nom": "Foliaire calcium",
+      "freq": "periode",
+      "periode": 14,
+      "min": 7,
+      "max": 49,
+      "cat": "Fertigation",
+      "detail": "CaCl₂ 5 g/L. Prévention de la nécrose apicale (cul noir)."
+    },
+    {
+      "id": "foliCaB",
+      "nom": "Foliaire calcium + bore",
+      "freq": "sem",
+      "jour": 5,
+      "min": 50,
+      "cat": "Fertigation",
+      "detail": "CaCl₂ 5 g/L + acide borique 1 g/L, chaque semaine. Le bore sert la pollinisation."
+    },
+    {
+      "id": "recL",
+      "nom": "Récolte — lundi 6 h à 9 h",
+      "freq": "sem",
+      "jour": 1,
+      "min": 80,
+      "cat": "Récolte",
+      "detail": "Stade breaker. Mains propres, pas de bagues. Caisses de 2 couches maximum. Ne pas récolter après 9 h."
+    },
+    {
+      "id": "recMe",
+      "nom": "Récolte — mercredi 6 h",
+      "freq": "sem",
+      "jour": 3,
+      "min": 80,
+      "cat": "Récolte",
+      "detail": "Deuxième récolte de la semaine."
+    },
+    {
+      "id": "tri",
+      "nom": "Tri de la récolte",
+      "freq": "sem",
+      "jour": 2,
+      "min": 80,
+      "cat": "Récolte",
+      "detail": "Trier la récolte du lundi. Grade A premium, B marché local, C écarté."
+    },
+    {
+      "id": "goutteurs",
+      "nom": "Contrôle des goutteurs",
+      "freq": "sem",
+      "jour": 3,
+      "min": 1,
+      "cat": "Contrôle",
+      "detail": "Parcourir les lignes, repérer les goutteurs bouchés et les fuites. Pression 1,2–1,8 bar."
+    },
+    {
+      "id": "rincage",
+      "nom": "Rinçage acide du Mazzei",
+      "freq": "periode",
+      "periode": 28,
+      "min": 100,
+      "cat": "Entretien",
+      "detail": "Acide phosphorique 0,5 %. Débouche les goutteurs. Rincer ensuite à l'eau claire 30 min."
+    },
+    {
+      "id": "finCycle",
+      "nom": "Fin de cycle — réduire l'azote",
+      "freq": "periode",
+      "periode": 14,
+      "min": 175,
+      "cat": "Conduite",
+      "detail": "Sous 200 kg par semaine : réduire la fertigation, cuivre seul, arrêter la chimie 7 jours avant la dernière récolte, puis arracher et désinfecter."
+    }
+  ],
+  "Tomate Star 9037 F1": [
+    {
+      "id": "tour",
+      "nom": "Tour de serre",
+      "freq": "jour",
+      "cat": "Contrôle",
+      "detail": "Vérifier la reprise des plants, la température et la ventilation. Au-dessus de 28 °C : ouvrir la ventilation et déployer l'ombrière."
+    },
+    {
+      "id": "ombrage",
+      "nom": "Ombrage des 3 premiers jours",
+      "freq": "jour",
+      "min": 0,
+      "max": 3,
+      "cat": "Contrôle",
+      "detail": "Ombrage 50 % sur les plants fraîchement repiqués."
+    },
+    {
+      "id": "ficelles",
+      "nom": "Fixation des ficelles de palissage",
+      "freq": "unique",
+      "min": 3,
+      "max": 12,
+      "cat": "Conduite",
+      "detail": "Une ficelle par tige. Nœud lâche au collet, jamais serré."
+    },
+    {
+      "id": "fertA",
+      "nom": "Fertigation — lundi",
+      "freq": "sem",
+      "jour": 1,
+      "min": 1,
+      "max": 49,
+      "cat": "Fertigation",
+      "detail": "Bac A : Ca(NO₃)₂ 4,2 kg + KNO₃ 5,5 kg / 200 L. Bac B : MAP 2,4 kg + MgSO₄ 1,2 kg / 200 L. EC 1,6–2,0, pH 5,8–6,2. NE JAMAIS mélanger A et B."
+    },
+    {
+      "id": "fertA2",
+      "nom": "Fertigation — jeudi",
+      "freq": "sem",
+      "jour": 4,
+      "min": 1,
+      "max": 49,
+      "cat": "Fertigation",
+      "detail": "Même préparation que le lundi. Deuxième injection de la semaine."
+    },
+    {
+      "id": "fertB",
+      "nom": "Fertigation — lundi (floraison)",
+      "freq": "sem",
+      "jour": 1,
+      "min": 50,
+      "max": 91,
+      "cat": "Fertigation",
+      "detail": "Bac A : Ca(NO₃)₂ 8,5 kg + KNO₃ 8 kg / 300 L. Bac B : MAP 2,5 kg + MgSO₄ 3,5 kg / 300 L. EC 2,0–2,3. Doses doublées."
+    },
+    {
+      "id": "fertB2",
+      "nom": "Fertigation — jeudi (floraison)",
+      "freq": "sem",
+      "jour": 4,
+      "min": 50,
+      "max": 91,
+      "cat": "Fertigation",
+      "detail": "Même préparation que le lundi."
+    },
+    {
+      "id": "fertC",
+      "nom": "Fertigation — lundi (récolte)",
+      "freq": "sem",
+      "jour": 1,
+      "min": 92,
+      "cat": "Fertigation",
+      "detail": "Bac A : Ca(NO₃)₂ 7 kg + KNO₃ 12 kg / 300 L. Bac B : MAP 2,5 kg + K₂SO₄ 4 kg + MgSO₄ 2 kg / 300 L. EC 2,2–2,5. Le potassium remplit les fruits."
+    },
+    {
+      "id": "fertC2",
+      "nom": "Fertigation — jeudi (récolte)",
+      "freq": "sem",
+      "jour": 4,
+      "min": 92,
+      "cat": "Fertigation",
+      "detail": "Même préparation que le lundi."
+    },
+    {
+      "id": "taille",
+      "nom": "Taille — retirer les gourmands",
+      "freq": "sem",
+      "jour": 2,
+      "min": 7,
+      "cat": "Conduite",
+      "detail": "Retirer tous les gourmands sauf la 2e tige. Désinfecter le sécateur à l'alcool 70 % entre chaque plant."
+    },
+    {
+      "id": "effeuil",
+      "nom": "Effeuillage bas",
+      "freq": "sem",
+      "jour": 2,
+      "min": 50,
+      "cat": "Conduite",
+      "detail": "Enlever 2 à 3 feuilles sous le dernier bouquet récolté. L'air circule, le Botrytis recule."
+    },
+    {
+      "id": "baisser",
+      "nom": "Baisser et pencher les plants",
+      "freq": "sem",
+      "jour": 2,
+      "min": 60,
+      "cat": "Conduite",
+      "detail": "Descendre les tiges le long de la ficelle pour garder la tête à hauteur de travail."
+    },
+    {
+      "id": "irrM",
+      "nom": "Irrigation eau claire — mercredi",
+      "freq": "sem",
+      "jour": 3,
+      "min": 1,
+      "cat": "Irrigation",
+      "detail": "Eau claire, pas de fertigation. 2–4 L/plant jusqu'à J49, 4–6 L en floraison, 6–8 L en récolte."
+    },
+    {
+      "id": "irrS",
+      "nom": "Irrigation eau claire — samedi",
+      "freq": "sem",
+      "jour": 6,
+      "min": 1,
+      "cat": "Irrigation",
+      "detail": "Eau claire. Relever les data loggers."
+    },
+    {
+      "id": "irrD",
+      "nom": "Irrigation eau claire — dimanche",
+      "freq": "sem",
+      "jour": 0,
+      "min": 1,
+      "cat": "Irrigation",
+      "detail": "Eau claire. Ne pas arroser après 14 h en saison des pluies."
+    },
+    {
+      "id": "scout",
+      "nom": "Scouting — vendredi matin",
+      "freq": "sem",
+      "jour": 5,
+      "min": 7,
+      "cat": "Surveillance",
+      "detail": "50 plants par module, dessous des feuilles. Relever les pièges jaunes. Plus de 10 aleurodes par piège : traiter."
+    },
+    {
+      "id": "fongi",
+      "nom": "Pulvérisation fongicide — vendredi soir",
+      "freq": "sem",
+      "jour": 5,
+      "min": 7,
+      "cat": "Phyto",
+      "detail": "Semaine impaire : chlorothalonil 2 g/L (FRAC M5). Semaine paire : azoxystrobine 0,8 mL/L + difénoconazole 0,5 mL/L (FRAC 11+3). EPI obligatoires, délai de rentrée 24 h. En récolte, vérifier le DAR."
+    },
+    {
+      "id": "foliCa",
+      "nom": "Foliaire calcium",
+      "freq": "periode",
+      "periode": 14,
+      "min": 7,
+      "max": 49,
+      "cat": "Fertigation",
+      "detail": "CaCl₂ 5 g/L. Prévention de la nécrose apicale (cul noir)."
+    },
+    {
+      "id": "foliCaB",
+      "nom": "Foliaire calcium + bore",
+      "freq": "sem",
+      "jour": 5,
+      "min": 50,
+      "cat": "Fertigation",
+      "detail": "CaCl₂ 5 g/L + acide borique 1 g/L, chaque semaine. Le bore sert la pollinisation."
+    },
+    {
+      "id": "recL",
+      "nom": "Récolte — lundi 6 h à 9 h",
+      "freq": "sem",
+      "jour": 1,
+      "min": 80,
+      "cat": "Récolte",
+      "detail": "Stade breaker. Mains propres, pas de bagues. Caisses de 2 couches maximum. Ne pas récolter après 9 h."
+    },
+    {
+      "id": "recMe",
+      "nom": "Récolte — mercredi 6 h",
+      "freq": "sem",
+      "jour": 3,
+      "min": 80,
+      "cat": "Récolte",
+      "detail": "Deuxième récolte de la semaine."
+    },
+    {
+      "id": "tri",
+      "nom": "Tri de la récolte",
+      "freq": "sem",
+      "jour": 2,
+      "min": 80,
+      "cat": "Récolte",
+      "detail": "Trier la récolte du lundi. Grade A premium, B marché local, C écarté."
+    },
+    {
+      "id": "goutteurs",
+      "nom": "Contrôle des goutteurs",
+      "freq": "sem",
+      "jour": 3,
+      "min": 1,
+      "cat": "Contrôle",
+      "detail": "Parcourir les lignes, repérer les goutteurs bouchés et les fuites. Pression 1,2–1,8 bar."
+    },
+    {
+      "id": "rincage",
+      "nom": "Rinçage acide du Mazzei",
+      "freq": "periode",
+      "periode": 28,
+      "min": 100,
+      "cat": "Entretien",
+      "detail": "Acide phosphorique 0,5 %. Débouche les goutteurs. Rincer ensuite à l'eau claire 30 min."
+    },
+    {
+      "id": "finCycle",
+      "nom": "Fin de cycle — réduire l'azote",
+      "freq": "periode",
+      "periode": 14,
+      "min": 175,
+      "cat": "Conduite",
+      "detail": "Sous 200 kg par semaine : réduire la fertigation, cuivre seul, arrêter la chimie 7 jours avant la dernière récolte, puis arracher et désinfecter."
+    }
+  ],
+  "Pépinière tomate": [
+    {
+      "id": "arros",
+      "nom": "Arrosage en pulvérisation fine",
+      "freq": "jour",
+      "min": 0,
+      "max": 20,
+      "cat": "Irrigation",
+      "detail": "Eau propre. Substrat humide, jamais trempé. Germination en 6 à 10 jours."
+    },
+    {
+      "id": "drench",
+      "nom": "Drench fongicide du substrat",
+      "freq": "unique",
+      "min": 0,
+      "max": 2,
+      "cat": "Phyto",
+      "detail": "Ridomil Gold MZ 2,5 g/L. Arroser chaque plaque. Prévient la fonte des semis."
+    },
+    {
+      "id": "fert1",
+      "nom": "Fertilisation pépinière",
+      "freq": "periode",
+      "periode": 7,
+      "min": 7,
+      "max": 13,
+      "cat": "Fertigation",
+      "detail": "NPK 20-20-20 à 0,5 g/L."
+    },
+    {
+      "id": "fert2",
+      "nom": "Fertilisation pépinière — dose doublée",
+      "freq": "periode",
+      "periode": 7,
+      "min": 14,
+      "max": 34,
+      "cat": "Fertigation",
+      "detail": "NPK 20-20-20 à 1 g/L."
+    },
+    {
+      "id": "manco",
+      "nom": "Pulvérisation mancozèbe",
+      "freq": "periode",
+      "periode": 7,
+      "min": 7,
+      "max": 27,
+      "cat": "Phyto",
+      "detail": "Mancozèbe 2 g/L sur les feuilles. À J7, J14, J21 puis STOP à J28 : une semaine propre avant repiquage."
+    },
+    {
+      "id": "confidor",
+      "nom": "Drench insecticide préventif",
+      "freq": "unique",
+      "min": 21,
+      "max": 24,
+      "cat": "Phyto",
+      "detail": "Confidor 0,5 mL/L, environ 30 mL par cellule au pied. Protège des aleurodes 3 à 4 semaines après repiquage."
+    },
+    {
+      "id": "durcis",
+      "nom": "Durcissement progressif",
+      "freq": "jour",
+      "min": 21,
+      "max": 34,
+      "cat": "Conduite",
+      "detail": "Réduire l'eau, exposer au soleil direct 2 à 4 h par jour puis toute la journée."
+    },
+    {
+      "id": "pret",
+      "nom": "Contrôle : les plants sont-ils prêts ?",
+      "freq": "unique",
+      "min": 33,
+      "max": 45,
+      "cat": "Contrôle",
+      "detail": "Prêt si 4 à 6 vraies feuilles, 15 à 25 cm, vert foncé, tige solide. Jeter tout plant jaune ou malade."
+    }
+  ],
+  "Banane Williams AAA": [
+    {
+      "id": "pediluve",
+      "nom": "Pédiluve et désinfection des outils",
+      "freq": "jour",
+      "cat": "Biosécurité",
+      "detail": "Tremper les pieds à chaque entrée du parc. Javel 10 %, renouvelée chaque semaine. Machettes et sécateurs désinfectés avant et après chaque usage."
+    },
+    {
+      "id": "irr",
+      "nom": "Irrigation",
+      "freq": "jour",
+      "cat": "Irrigation",
+      "detail": "M1–M3 : 25–35 L/plant/jour. M4–M6 : 35–45 L. M7 et au-delà : 45–55 L. Pluie supérieure à 15 mm : pas d'irrigation."
+    },
+    {
+      "id": "fert1",
+      "nom": "Fertilisation mensuelle — établissement",
+      "freq": "periode",
+      "periode": 30,
+      "min": 25,
+      "max": 100,
+      "cat": "Fertilisation",
+      "detail": "Urée 40 g + K₂SO₄ 65 g par plant, en cercle à 30 cm du pseudotronc. Jamais contre le pseudotronc."
+    },
+    {
+      "id": "fert2",
+      "nom": "Fertilisation mensuelle — croissance",
+      "freq": "periode",
+      "periode": 30,
+      "min": 101,
+      "max": 190,
+      "cat": "Fertilisation",
+      "detail": "Urée 65 g + K₂SO₄ 130 g + MgSO₄ 30 g par plant, en cercle à 30–50 cm."
+    },
+    {
+      "id": "fert3",
+      "nom": "Fertilisation mensuelle — pré-floraison",
+      "freq": "periode",
+      "periode": 30,
+      "min": 191,
+      "max": 280,
+      "cat": "Fertilisation",
+      "detail": "Urée 100 g + K₂SO₄ 250 g par plant, en cercle à 50 cm. Pic de potassium."
+    },
+    {
+      "id": "fert4",
+      "nom": "Fertilisation mensuelle — remplissage",
+      "freq": "periode",
+      "periode": 30,
+      "min": 281,
+      "cat": "Fertilisation",
+      "detail": "Urée 70 g + K₂SO₄ 250 g par plant, en cercle à 50 cm."
+    },
+    {
+      "id": "desherb",
+      "nom": "Désherbage manuel",
+      "freq": "periode",
+      "periode": 15,
+      "min": 20,
+      "cat": "Entretien",
+      "detail": "Manuel autour de chaque plant, rayon 1 m."
+    },
+    {
+      "id": "paillage",
+      "nom": "Contrôle du paillage",
+      "freq": "periode",
+      "periode": 30,
+      "min": 20,
+      "cat": "Entretien",
+      "detail": "Recharger si l'épaisseur est inférieure à 10 cm. Le paillis ne doit jamais toucher le pseudotronc."
+    },
+    {
+      "id": "pieges",
+      "nom": "Relever les pièges à charançon",
+      "freq": "periode",
+      "periode": 15,
+      "min": 30,
+      "cat": "Surveillance",
+      "detail": "Tronçons de pseudotronc de 30 cm, face coupée au sol, 1 piège pour 10 mats. Retourner et détruire les charançons."
+    },
+    {
+      "id": "nema1",
+      "nom": "Nématicide — 1re application",
+      "freq": "unique",
+      "min": 55,
+      "max": 75,
+      "cat": "Phyto",
+      "detail": "Carbofuran 20 g au pied de chaque plant. TOXIQUE : gants, masque, combinaison, bottes. Maximum 2 fois par an."
+    },
+    {
+      "id": "nema2",
+      "nom": "Nématicide — 2e application",
+      "freq": "unique",
+      "min": 115,
+      "max": 135,
+      "cat": "Phyto",
+      "detail": "Carbofuran 20 g par plant. EPI complets. Dernière de l'année."
+    },
+    {
+      "id": "effeuil",
+      "nom": "Effeuillage sanitaire Sigatoka",
+      "freq": "periode",
+      "periode": 15,
+      "min": 100,
+      "cat": "Phyto",
+      "detail": "Couper toute feuille tachée et la poser en paillis loin du mat. Garder 8 à 10 feuilles saines minimum."
+    },
+    {
+      "id": "oeillet",
+      "nom": "Œilletonnage",
+      "freq": "periode",
+      "periode": 24,
+      "min": 100,
+      "cat": "Conduite",
+      "detail": "Garder Mère + Fille + Petite-fille. Couper tous les autres rejets et enfoncer la machette en croix dans le corme coupé."
+    },
+    {
+      "id": "sigatoka",
+      "nom": "Fongicide Sigatoka",
+      "freq": "periode",
+      "periode": 24,
+      "min": 30,
+      "cat": "Phyto",
+      "detail": "Rotation obligatoire : mancozèbe 2,5 g/L (M03) → propiconazole 1 mL/L (3) → azoxystrobine 1 mL/L + difénoconazole 0,5 mL/L (11+3) → mancozèbe. Azoxystrobine 3 fois par an maximum. Jamais plus de 28 jours entre deux passages."
+    },
+    {
+      "id": "foliKCa",
+      "nom": "Foliaire potassium + calcium",
+      "freq": "periode",
+      "periode": 15,
+      "min": 191,
+      "cat": "Fertilisation",
+      "detail": "K₂SO₄ 15 g/L + CaCl₂ 5 g/L en pulvérisation foliaire."
+    },
+    {
+      "id": "declochage",
+      "nom": "Déclochage — casser la fleur mâle",
+      "freq": "periode",
+      "periode": 7,
+      "min": 280,
+      "cat": "Conduite",
+      "detail": "10 à 15 jours après la dernière main femelle, casser la cloche À LA MAIN. Jamais d'outil."
+    },
+    {
+      "id": "ensachage",
+      "nom": "Ensachage des régimes",
+      "freq": "periode",
+      "periode": 7,
+      "min": 285,
+      "cat": "Conduite",
+      "detail": "7 à 10 jours après le déclochage. Sac polyéthylène PERFORÉ BLEU 80×100 cm. Poser le ruban de la semaine. Gain de poids de 10 à 15 %."
+    },
+    {
+      "id": "tuteurage",
+      "nom": "Tuteurage des mats en fruit",
+      "freq": "periode",
+      "periode": 7,
+      "min": 280,
+      "cat": "Conduite",
+      "detail": "Dès que le régime est visible : tuteur bambou de 3 m attaché au pseudotronc. Un tuteur par mat en fruit."
+    },
+    {
+      "id": "arretChimie",
+      "nom": "Arrêt de la chimie avant récolte",
+      "freq": "unique",
+      "min": 330,
+      "max": 360,
+      "cat": "Phyto",
+      "detail": "14 jours avant la coupe : plus de fongicide foliaire, plus de nématicide."
+    },
+    {
+      "id": "maturite",
+      "nom": "Contrôle de maturité des régimes",
+      "freq": "periode",
+      "periode": 7,
+      "min": 330,
+      "cat": "Récolte",
+      "detail": "Doigts aux trois quarts arrondis, diamètre 35 à 48 mm, vert foncé uniforme, 80 à 100 jours après floraison."
+    },
+    {
+      "id": "postrecolte",
+      "nom": "Chaîne post-récolte",
+      "freq": "periode",
+      "periode": 7,
+      "min": 340,
+      "cat": "Récolte",
+      "detail": "Bain 1 alun 20 g/L 15–20 min. Bain 2 Javel 4 mL/L (200 ppm) 2–3 min. Bain 3 Mertect 1 mL/L sur les couronnes. Sans le bain 3, les bananes pourrissent en 3 à 5 jours."
+    }
+  ],
+  "Plantain AAB": [
+    {
+      "id": "pediluve",
+      "nom": "Pédiluve et désinfection des outils",
+      "freq": "jour",
+      "cat": "Biosécurité",
+      "detail": "Tremper les pieds à chaque entrée du parc. Javel 10 %, renouvelée chaque semaine. Machettes et sécateurs désinfectés avant et après chaque usage."
+    },
+    {
+      "id": "irr",
+      "nom": "Irrigation",
+      "freq": "jour",
+      "cat": "Irrigation",
+      "detail": "M1–M3 : 25–35 L/plant/jour. M4–M6 : 35–45 L. M7 et au-delà : 45–55 L. Pluie supérieure à 15 mm : pas d'irrigation."
+    },
+    {
+      "id": "fert1",
+      "nom": "Fertilisation mensuelle — établissement",
+      "freq": "periode",
+      "periode": 30,
+      "min": 25,
+      "max": 100,
+      "cat": "Fertilisation",
+      "detail": "Urée 40 g + K₂SO₄ 65 g par plant, en cercle à 30 cm du pseudotronc. Jamais contre le pseudotronc."
+    },
+    {
+      "id": "fert2",
+      "nom": "Fertilisation mensuelle — croissance",
+      "freq": "periode",
+      "periode": 30,
+      "min": 101,
+      "max": 190,
+      "cat": "Fertilisation",
+      "detail": "Urée 65 g + K₂SO₄ 130 g + MgSO₄ 30 g par plant, en cercle à 30–50 cm."
+    },
+    {
+      "id": "fert3",
+      "nom": "Fertilisation mensuelle — pré-floraison",
+      "freq": "periode",
+      "periode": 30,
+      "min": 191,
+      "max": 280,
+      "cat": "Fertilisation",
+      "detail": "Urée 100 g + K₂SO₄ 250 g par plant, en cercle à 50 cm. Pic de potassium."
+    },
+    {
+      "id": "fert4",
+      "nom": "Fertilisation mensuelle — remplissage",
+      "freq": "periode",
+      "periode": 30,
+      "min": 281,
+      "cat": "Fertilisation",
+      "detail": "Urée 70 g + K₂SO₄ 250 g par plant, en cercle à 50 cm."
+    },
+    {
+      "id": "desherb",
+      "nom": "Désherbage manuel",
+      "freq": "periode",
+      "periode": 15,
+      "min": 20,
+      "cat": "Entretien",
+      "detail": "Manuel autour de chaque plant, rayon 1 m."
+    },
+    {
+      "id": "paillage",
+      "nom": "Contrôle du paillage",
+      "freq": "periode",
+      "periode": 30,
+      "min": 20,
+      "cat": "Entretien",
+      "detail": "Recharger si l'épaisseur est inférieure à 10 cm. Le paillis ne doit jamais toucher le pseudotronc."
+    },
+    {
+      "id": "pieges",
+      "nom": "Relever les pièges à charançon",
+      "freq": "periode",
+      "periode": 15,
+      "min": 30,
+      "cat": "Surveillance",
+      "detail": "Tronçons de pseudotronc de 30 cm, face coupée au sol, 1 piège pour 10 mats. Retourner et détruire les charançons."
+    },
+    {
+      "id": "nema1",
+      "nom": "Nématicide — 1re application",
+      "freq": "unique",
+      "min": 55,
+      "max": 75,
+      "cat": "Phyto",
+      "detail": "Carbofuran 20 g au pied de chaque plant. TOXIQUE : gants, masque, combinaison, bottes. Maximum 2 fois par an."
+    },
+    {
+      "id": "nema2",
+      "nom": "Nématicide — 2e application",
+      "freq": "unique",
+      "min": 115,
+      "max": 135,
+      "cat": "Phyto",
+      "detail": "Carbofuran 20 g par plant. EPI complets. Dernière de l'année."
+    },
+    {
+      "id": "effeuil",
+      "nom": "Effeuillage sanitaire Sigatoka",
+      "freq": "periode",
+      "periode": 15,
+      "min": 100,
+      "cat": "Phyto",
+      "detail": "Couper toute feuille tachée et la poser en paillis loin du mat. Garder 8 à 10 feuilles saines minimum."
+    },
+    {
+      "id": "oeillet",
+      "nom": "Œilletonnage",
+      "freq": "periode",
+      "periode": 24,
+      "min": 100,
+      "cat": "Conduite",
+      "detail": "Garder Mère + Fille + Petite-fille. Couper tous les autres rejets et enfoncer la machette en croix dans le corme coupé."
+    },
+    {
+      "id": "sigatoka",
+      "nom": "Fongicide Sigatoka",
+      "freq": "periode",
+      "periode": 24,
+      "min": 30,
+      "cat": "Phyto",
+      "detail": "Rotation obligatoire : mancozèbe 2,5 g/L (M03) → propiconazole 1 mL/L (3) → azoxystrobine 1 mL/L + difénoconazole 0,5 mL/L (11+3) → mancozèbe. Azoxystrobine 3 fois par an maximum. Jamais plus de 28 jours entre deux passages."
+    },
+    {
+      "id": "foliKCa",
+      "nom": "Foliaire potassium + calcium",
+      "freq": "periode",
+      "periode": 15,
+      "min": 191,
+      "cat": "Fertilisation",
+      "detail": "K₂SO₄ 15 g/L + CaCl₂ 5 g/L en pulvérisation foliaire."
+    },
+    {
+      "id": "declochage",
+      "nom": "Déclochage — casser la fleur mâle",
+      "freq": "periode",
+      "periode": 7,
+      "min": 280,
+      "cat": "Conduite",
+      "detail": "10 à 15 jours après la dernière main femelle, casser la cloche À LA MAIN. Jamais d'outil."
+    },
+    {
+      "id": "ensachage",
+      "nom": "Ensachage des régimes",
+      "freq": "periode",
+      "periode": 7,
+      "min": 285,
+      "cat": "Conduite",
+      "detail": "7 à 10 jours après le déclochage. Sac polyéthylène PERFORÉ BLEU 80×100 cm. Poser le ruban de la semaine. Gain de poids de 10 à 15 %."
+    },
+    {
+      "id": "tuteurage",
+      "nom": "Tuteurage des mats en fruit",
+      "freq": "periode",
+      "periode": 7,
+      "min": 280,
+      "cat": "Conduite",
+      "detail": "Dès que le régime est visible : tuteur bambou de 3 m attaché au pseudotronc. Un tuteur par mat en fruit."
+    },
+    {
+      "id": "arretChimie",
+      "nom": "Arrêt de la chimie avant récolte",
+      "freq": "unique",
+      "min": 330,
+      "max": 360,
+      "cat": "Phyto",
+      "detail": "14 jours avant la coupe : plus de fongicide foliaire, plus de nématicide."
+    },
+    {
+      "id": "maturite",
+      "nom": "Contrôle de maturité des régimes",
+      "freq": "periode",
+      "periode": 7,
+      "min": 330,
+      "cat": "Récolte",
+      "detail": "Doigts aux trois quarts arrondis, diamètre 35 à 48 mm, vert foncé uniforme, 80 à 100 jours après floraison."
+    },
+    {
+      "id": "postrecolte",
+      "nom": "Chaîne post-récolte",
+      "freq": "periode",
+      "periode": 7,
+      "min": 340,
+      "cat": "Récolte",
+      "detail": "Bain 1 alun 20 g/L 15–20 min. Bain 2 Javel 4 mL/L (200 ppm) 2–3 min. Bain 3 Mertect 1 mL/L sur les couronnes. Sans le bain 3, les bananes pourrissent en 3 à 5 jours."
+    }
+  ],
+  "Pépinière PIF": [
+    {
+      "id": "arros",
+      "nom": "Arrosage du germoir",
+      "freq": "jour",
+      "cat": "Irrigation",
+      "detail": "Au pulvérisateur, une fois le matin. Jamais au jet."
+    },
+    {
+      "id": "test",
+      "nom": "Test de la poignée de sciure",
+      "freq": "jour",
+      "cat": "Contrôle",
+      "detail": "Serrer une poignée : l'eau coule, trop mouillé ; boule humide, parfait ; s'émiette, arroser un peu."
+    },
+    {
+      "id": "pourris",
+      "nom": "Retirer les cormes pourris",
+      "freq": "jour",
+      "cat": "Biosécurité",
+      "detail": "Mou, noir, odeur : retirer immédiatement du germoir."
+    },
+    {
+      "id": "comptage",
+      "nom": "Comptage des plantules sorties",
+      "freq": "periode",
+      "periode": 7,
+      "min": 14,
+      "max": 45,
+      "cat": "Contrôle",
+      "detail": "Bourgeons blancs en semaine 2–3, pousses vertes en semaine 3–4, 2 à 3 feuilles en semaine 5–6."
+    },
+    {
+      "id": "sevrage",
+      "nom": "Sevrage en pots",
+      "freq": "unique",
+      "min": 35,
+      "max": 55,
+      "cat": "Conduite",
+      "detail": "Dès 2 à 3 feuilles. Terreau 3 terre + 2 sable + 1 fumier. Une plantule par pot. Remettre le corme au germoir."
+    },
+    {
+      "id": "endurc",
+      "nom": "Endurcissement",
+      "freq": "jour",
+      "min": 84,
+      "max": 98,
+      "cat": "Conduite",
+      "detail": "Plein soleil et arrosage un jour sur deux pendant les deux dernières semaines."
+    },
+    {
+      "id": "pret",
+      "nom": "Contrôle : plants prêts à transplanter",
+      "freq": "unique",
+      "min": 98,
+      "max": 120,
+      "cat": "Contrôle",
+      "detail": "25 à 40 cm, 4 à 6 feuilles saines, base d'au moins 1,5 cm, racines blanches. Un plant jaune ne va pas au champ."
+    }
+  ],
+  "Poulets de chair": [
+    {
+      "id": "eauChair",
+      "nom": "Eau — abreuvoirs propres et pleins",
+      "freq": "jour",
+      "cat": "Alimentation",
+      "detail": "Nettoyer les abreuvoirs chaque matin. Un poulet boit environ deux fois ce qu'il mange. Eau tiède la première semaine."
+    },
+    {
+      "id": "alimDem",
+      "nom": "Aliment DÉMARRAGE",
+      "freq": "jour",
+      "min": 0,
+      "max": 10,
+      "cat": "Alimentation",
+      "detail": "Aliment démarrage poussin (21–22 % de protéines), en miettes. À volonté. Comptez 15 à 20 g par sujet et par jour la première semaine."
+    },
+    {
+      "id": "alimCro",
+      "nom": "Aliment CROISSANCE",
+      "freq": "jour",
+      "min": 11,
+      "max": 24,
+      "cat": "Alimentation",
+      "detail": "Aliment croissance (19–20 % de protéines). Transition progressive sur 3 jours en mélangeant les deux aliments : un changement brutal provoque des diarrhées."
+    },
+    {
+      "id": "alimFin",
+      "nom": "Aliment FINITION",
+      "freq": "jour",
+      "min": 25,
+      "cat": "Alimentation",
+      "detail": "Aliment finition (18 % de protéines). Respecter le délai d'attente des additifs avant abattage."
+    },
+    {
+      "id": "temp",
+      "nom": "Contrôle de la température",
+      "freq": "jour",
+      "min": 0,
+      "max": 28,
+      "cat": "Ambiance",
+      "detail": "33 °C la 1re semaine, puis −3 °C par semaine jusqu'à 22 °C. Poussins entassés : trop froid. Poussins écartés le long des murs : trop chaud."
+    },
+    {
+      "id": "litiere",
+      "nom": "Contrôle de la litière",
+      "freq": "jour",
+      "cat": "Ambiance",
+      "detail": "Litière sèche et meuble. Une croûte humide brûle les pattes et déclenche l'ammoniac. Retourner, et remplacer les zones mouillées."
+    },
+    {
+      "id": "mortalite",
+      "nom": "Ramassage des morts et comptage",
+      "freq": "jour",
+      "cat": "Santé",
+      "detail": "Ramasser matin et soir. Noter le nombre. Au-delà de 1 % en un jour, prévenir la Direction immédiatement."
+    },
+    {
+      "id": "vacND1",
+      "nom": "Vaccination Newcastle + Bronchite",
+      "freq": "unique",
+      "min": 6,
+      "max": 9,
+      "cat": "Santé",
+      "detail": "Premier rappel, à l'eau de boisson. Retirer l'eau 2 heures avant. Pas de désinfectant dans l'eau ce jour-là."
+    },
+    {
+      "id": "vacGum",
+      "nom": "Vaccination Gumboro",
+      "freq": "unique",
+      "min": 12,
+      "max": 16,
+      "cat": "Santé",
+      "detail": "À l'eau de boisson. Même précaution : pas de chlore ni de désinfectant dans l'eau."
+    },
+    {
+      "id": "vacND2",
+      "nom": "Rappel Newcastle",
+      "freq": "unique",
+      "min": 20,
+      "max": 24,
+      "cat": "Santé",
+      "detail": "Deuxième rappel à l'eau de boisson."
+    },
+    {
+      "id": "pesee",
+      "nom": "Pesée d'un échantillon",
+      "freq": "periode",
+      "periode": 7,
+      "min": 7,
+      "cat": "Contrôle",
+      "detail": "Peser 20 sujets pris au hasard. Objectifs indicatifs : 180 g à J7, 500 g à J14, 1 000 g à J21, 1 600 g à J28, 2 400 g à J42."
+    },
+    {
+      "id": "densite",
+      "nom": "Contrôle de la densité et du matériel",
+      "freq": "periode",
+      "periode": 7,
+      "cat": "Ambiance",
+      "detail": "10 à 12 sujets par m². Une mangeoire pour 50 sujets, un abreuvoir pour 80. En manque, les plus faibles ne mangent pas."
+    },
+    {
+      "id": "biosec",
+      "nom": "Biosécurité — pédiluve et interdiction d'entrée",
+      "freq": "jour",
+      "cat": "Biosécurité",
+      "detail": "Pédiluve à l'entrée, renouvelé chaque semaine. Aucun visiteur. Ne jamais aller au poulailler après avoir visité un autre élevage."
+    },
+    {
+      "id": "vide",
+      "nom": "Vide sanitaire à préparer",
+      "freq": "unique",
+      "min": 40,
+      "max": 50,
+      "cat": "Biosécurité",
+      "detail": "Après enlèvement : sortir la litière, laver, désinfecter, laisser le bâtiment vide 14 jours minimum avant la bande suivante."
+    }
+  ],
+  "Poules pondeuses": [
+    {
+      "id": "eauP",
+      "nom": "Eau — abreuvoirs propres et pleins",
+      "freq": "jour",
+      "cat": "Alimentation",
+      "detail": "Nettoyer chaque matin. Une pondeuse boit 200 à 250 mL par jour. Une coupure d'eau d'une demi-journée fait chuter la ponte pendant une semaine."
+    },
+    {
+      "id": "alimP1",
+      "nom": "Aliment DÉMARRAGE poussin",
+      "freq": "jour",
+      "min": 0,
+      "max": 42,
+      "cat": "Alimentation",
+      "detail": "Aliment démarrage (20–21 % de protéines). À volonté."
+    },
+    {
+      "id": "alimP2",
+      "nom": "Aliment POULETTE",
+      "freq": "jour",
+      "min": 43,
+      "max": 118,
+      "cat": "Alimentation",
+      "detail": "Aliment poulette (16 % de protéines). Rationner selon le poids : une poulette trop grasse pond mal."
+    },
+    {
+      "id": "alimP3",
+      "nom": "Aliment PONTE",
+      "freq": "jour",
+      "min": 119,
+      "cat": "Alimentation",
+      "detail": "Aliment ponte (17–18 % de protéines, 3,5 à 4 % de calcium). 110 à 120 g par poule et par jour. Passer à l'aliment ponte à 18 semaines OU dès 5 % de ponte, selon ce qui vient en premier."
+    },
+    {
+      "id": "coquille",
+      "nom": "Complément calcique — coquilles ou calcaire",
+      "freq": "jour",
+      "min": 119,
+      "cat": "Alimentation",
+      "detail": "Distribuer en fin d'après-midi, à part de l'aliment : la coquille de l'œuf se forme la nuit. Coquilles molles ou cassantes : le calcium manque."
+    },
+    {
+      "id": "ramassage",
+      "nom": "Ramassage des œufs",
+      "freq": "jour",
+      "min": 119,
+      "cat": "Production",
+      "detail": "Au moins trois fois par jour : matin, midi, fin d'après-midi. Un œuf laissé au nid est un œuf sale, cassé ou couvé."
+    },
+    {
+      "id": "triOeufs",
+      "nom": "Tri et calibrage des œufs",
+      "freq": "jour",
+      "min": 119,
+      "cat": "Production",
+      "detail": "Séparer propres, sales et cassés. Ne jamais laver un œuf destiné à la vente : le lavage détruit la cuticule et fait entrer les bactéries."
+    },
+    {
+      "id": "nids",
+      "nom": "Entretien des pondoirs",
+      "freq": "jour",
+      "min": 112,
+      "cat": "Ambiance",
+      "detail": "Litière de pondoir propre et sèche. Un pondoir pour 4 à 5 poules. Pondoirs sales : œufs sales, donc déclassés."
+    },
+    {
+      "id": "litiereP",
+      "nom": "Contrôle de la litière",
+      "freq": "jour",
+      "cat": "Ambiance",
+      "detail": "Sèche et meuble. Retourner, remplacer les zones humides."
+    },
+    {
+      "id": "mortP",
+      "nom": "Ramassage des morts et comptage",
+      "freq": "jour",
+      "cat": "Santé",
+      "detail": "Matin et soir. Noter le nombre et la cause présumée."
+    },
+    {
+      "id": "vacP1",
+      "nom": "Vaccination Newcastle + Bronchite",
+      "freq": "unique",
+      "min": 6,
+      "max": 9,
+      "cat": "Santé",
+      "detail": "Premier rappel à l'eau de boisson."
+    },
+    {
+      "id": "vacP2",
+      "nom": "Vaccination Gumboro",
+      "freq": "unique",
+      "min": 12,
+      "max": 16,
+      "cat": "Santé",
+      "detail": "À l'eau de boisson."
+    },
+    {
+      "id": "vacP3",
+      "nom": "Rappel Newcastle avant l'entrée en ponte",
+      "freq": "unique",
+      "min": 100,
+      "max": 115,
+      "cat": "Santé",
+      "detail": "Rappel indispensable : une Newcastle en pleine ponte arrête l'élevage."
+    },
+    {
+      "id": "deparaP",
+      "nom": "Déparasitage",
+      "freq": "periode",
+      "periode": 90,
+      "min": 56,
+      "cat": "Santé",
+      "detail": "Vermifuge selon prescription. Respecter le délai d'attente : les œufs pondus pendant ce délai ne se vendent pas."
+    },
+    {
+      "id": "peseeP",
+      "nom": "Pesée d'un échantillon",
+      "freq": "periode",
+      "periode": 14,
+      "min": 14,
+      "cat": "Contrôle",
+      "detail": "Peser 20 sujets. L'homogénéité du lot compte autant que le poids moyen : plus de 10 % d'écart, la ponte sera irrégulière."
+    },
+    {
+      "id": "biosecP",
+      "nom": "Biosécurité — pédiluve et interdiction d'entrée",
+      "freq": "jour",
+      "cat": "Biosécurité",
+      "detail": "Pédiluve à l'entrée, renouvelé chaque semaine. Aucun visiteur."
+    }
+  ]
+}

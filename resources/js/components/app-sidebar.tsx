@@ -28,6 +28,7 @@ const mainNavItems: NavItem[] = [
         href: home(),
         icon: LayoutGrid,
     },
+    { title: 'Tâches quotidiennes', href: '/taches', icon: ClipboardList },
     {
         title: 'Carnet terrain',
         href: '/carnet',

@@ -21,9 +21,10 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 /**
  * @property Role $role
  * @property Carbon|null $employed_until
- */
-
-/**
+ * @property Carbon|null $employed_from
+ * @property int|null $site_id
+ * @property int|null $department_id
+ * @property Site|null $site
  * @property int $id
  * @property string $name
  * @property string $email
@@ -40,11 +41,14 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
-    /** @use HasFactory<UserFactory> */
     use Auditable;
 
-    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    /** @use HasFactory<UserFactory> */
+    use HasFactory;
 
+    use Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+
+    /** @var list<string> */
     protected array $auditExclude = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'];
 
     /**
@@ -83,6 +87,7 @@ class User extends Authenticatable implements PasskeyUser
         return $this->isActive() && $amount <= $this->ceilingCents();
     }
 
+    /** @return BelongsTo<Site, $this> */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
@@ -103,16 +108,19 @@ class User extends Authenticatable implements PasskeyUser
         return null;
     }
 
+    /** @return BelongsTo<Department, $this> */
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function manager(): BelongsTo
     {
         return $this->belongsTo(self::class, 'manager_id');
     }
 
+    /** @return HasMany<Attendance, $this> */
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);

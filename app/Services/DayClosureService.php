@@ -18,9 +18,9 @@ final class DayClosureService
     public function close(int $departmentId, CarbonImmutable $workDate, User $by): DayClosure
     {
         Gate::forUser($by)->authorize('close-day');
-        $outstanding = Task::query()->where('department_id', $departmentId)->whereDate('due_at', '<=', $workDate)->where('status', Task::TODO)->exists();
+        $outstanding = Task::query()->where('department_id', $departmentId)->where(fn ($q) => $q->where(fn ($q) => $q->where('origin', 'crop_registry')->where('due_at', '<=', $workDate->setTimezone((string) config('dtomate.timezone'))->endOfDay()->utc()))->orWhere(fn ($q) => $q->where('origin', '!=', 'crop_registry')->whereDate('due_at', '<=', $workDate)))->whereIn('status', Task::OPEN_STATUSES)->exists();
         if ($outstanding) {
-            throw new RuntimeException('Clôture refusée : des tâches échues restent sans réponse.');
+            throw new RuntimeException('Clôture refusée : des tâches échues restent sans réponse, en correction ou sans validation des preuves.');
         }
 
         $department = Department::query()->findOrFail($departmentId);
