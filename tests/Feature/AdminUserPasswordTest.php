@@ -17,6 +17,7 @@ class AdminUserPasswordTest extends TestCase
     {
         return [
             'name' => $user->name, 'email' => $user->email,
+            'modules' => ['taches', 'carnet'],
             'role' => $user->role->value, 'site_id' => $user->site_id,
             'password' => 'New-password-456!', 'password_confirmation' => 'New-password-456!',
         ];

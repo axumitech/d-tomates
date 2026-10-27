@@ -37,7 +37,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'role', 'job_title', 'site_id', 'department_id', 'manager_id', 'approval_ceiling_cents', 'daily_rate_cents', 'employed_from', 'employed_until', 'is_field_only'])]
+#[Fillable(['name', 'email', 'password', 'role', 'job_title', 'site_id', 'department_id', 'manager_id', 'approval_ceiling_cents', 'daily_rate_cents', 'employed_from', 'employed_until', 'is_field_only', 'modules'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -66,7 +66,30 @@ class User extends Authenticatable implements PasskeyUser
             'employed_from' => 'date',
             'employed_until' => 'date',
             'is_field_only' => 'boolean',
+            'modules' => 'array',
         ];
+    }
+
+    public const MODULES = [
+        'pilotage' => 'Pilotage', 'taches' => 'Tâches quotidiennes',
+        'carnet' => 'Carnet terrain', 'maintenance' => 'Maintenance',
+        'administration' => 'Administration', 'registres' => 'Registres sécurisés',
+    ];
+
+    public function hasModule(string $module): bool
+    {
+        return $this->isActive() && in_array($module, $this->modules ?? array_keys(self::MODULES), true);
+    }
+
+    public function landingPage(): string
+    {
+        foreach (array_keys(self::MODULES) as $module) {
+            if ($this->hasModule($module)) {
+                return $module === 'pilotage' ? '/' : '/'.$module;
+            }
+        }
+
+        return '/profil';
     }
 
     public function isActive(): bool

@@ -284,6 +284,12 @@ final class DailyTasksTest extends TestCase
         $report = app(DailyTaskReport::class)->snapshot(ServerClock::today(), $this->site->id);
         $this->assertSame(0, $report['done']);
         $this->assertSame(1, $report['pending_review']);
+        $this->assertSame(1, $report['categories'][0]['pending']);
+        $this->assertSame(0, $report['categories'][0]['not_done']);
+        $this->assertSame($task->id, $report['categories'][0]['tasks'][0]['id']);
+        $this->assertLessThan(count($report['details']), count($report['lines']));
+        $this->assertCount(2, $report['people']);
+        $this->assertSame(['Non pointé'], array_values(array_unique(array_column($report['people'], 'status'))));
         $this->post(route('tasks.review', $task), ['decision' => 'approve', 'photos_examined' => true])->assertForbidden();
         $wrong = User::factory()->create(['site_id' => $this->site->id, 'role' => Role::Superviseur]);
         $this->actingAs($wrong)->post(route('tasks.review', $task), ['decision' => 'approve', 'photos_examined' => true])->assertForbidden();

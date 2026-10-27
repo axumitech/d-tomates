@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureModuleAccess;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
+            EnsureModuleAccess::class,
             AddLinkHeadersForPreloadedAssets::class,
             SecurityHeaders::class,
         ]);

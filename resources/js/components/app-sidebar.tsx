@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     ClipboardList,
     LayoutGrid,
@@ -20,7 +20,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { home } from '@/routes';
-import type { NavItem } from '@/types';
+import type { NavItem, Auth } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
@@ -55,6 +55,17 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const modules = auth.user.modules as string[] | null;
+    const allowed = (item: NavItem) => {
+        const path = typeof item.href === 'string' ? item.href : item.href.url;
+
+        return (
+            modules == null ||
+            modules.includes(path === '/' ? 'pilotage' : path.slice(1))
+        );
+    };
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -70,11 +81,14 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={mainNavItems.filter(allowed)} />
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                <NavFooter
+                    items={footerNavItems.filter(allowed)}
+                    className="mt-auto"
+                />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

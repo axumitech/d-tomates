@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Attendance;
 use App\Models\CarnetRecord;
+use App\Models\Item;
 use App\Models\Task;
 use App\Models\TaskTemplate;
 use App\Models\User;
@@ -13,10 +15,10 @@ use Carbon\CarbonImmutable;
 
 final class DailyTaskReport
 {
-    /** @return array{site_id: int, date: string, lines: list<string>, recommendations: list<string>, total: int, done: int, pending_review: int, corrections: int, justified: int, unanswered: int, unassigned: int} */
+    /** @return array<string, mixed> */
     public function snapshot(CarbonImmutable $date, int $siteId): array
     {
-        $tasks = Task::query()->with(['zone', 'assignee', 'reviewer', 'events'])->where('site_id', $siteId)
+        $tasks = Task::query()->with(['zone', 'assignee', 'reviewer', 'events', 'template'])->where('site_id', $siteId)
             ->where('origin', 'crop_registry')->whereDate('work_date', '<=', $date)
             ->where(fn ($q) => $q->whereDate('work_date', $date)->orWhereIn('status', Task::OPEN_STATUSES)->orWhereBetween('closed_at', [$date->startOfDay()->utc(), $date->endOfDay()->utc()]))
             ->orderBy('work_date')->orderBy('zone_id')->get();
@@ -107,6 +109,44 @@ final class DailyTaskReport
             $lines[] = 'Contrôler les preuves déposées et préparer les attributions du lendemain.';
         }
 
-        return ['site_id' => $siteId, 'date' => $date->toDateString(), 'lines' => $lines, 'recommendations' => array_values(array_unique($recommendations)), 'total' => $tasks->count(), 'done' => $done, 'pending_review' => $pendingReview, 'corrections' => $corrections, 'justified' => $justified, 'unanswered' => $unanswered, 'unassigned' => $unassigned];
+        $details = $lines;
+        $categories = [];
+        foreach ($tasks->groupBy(fn (Task $task) => $task->template->category ?? 'Autres') as $category => $group) {
+            $categories[] = [
+                'name' => $category, 'total' => $group->count(),
+                'done' => $group->where('status', Task::DONE)->count(),
+                'pending' => $group->where('status', Task::PENDING_REVIEW)->count(),
+                'not_done' => $group->whereNotIn('status', [Task::DONE, Task::PENDING_REVIEW])->count(),
+                'tasks' => $group->map(fn (Task $task) => [
+                    'id' => $task->id, 'title' => $task->title, 'status' => $task->status,
+                    'zone' => $task->zone?->name, 'assignee' => $task->assignee?->name,
+                ])->values()->all(),
+            ];
+        }
+        $staff = User::query()->where('site_id', $siteId)
+            ->where(fn ($q) => $q->whereNull('employed_from')->orWhereDate('employed_from', '<=', $date))
+            ->where(fn ($q) => $q->whereNull('employed_until')->orWhereDate('employed_until', '>=', $date))->get();
+        $attendance = Attendance::query()->where('site_id', $siteId)->whereDate('work_date', $date)->get()->keyBy('user_id');
+        $people = $staff->map(fn (User $person) => [
+            'name' => $person->name,
+            'status' => $attendance->get($person->id)?->status->label() ?? 'Non pointé',
+        ])->values();
+        $present = $people->where('status', 'Présent')->count();
+        $unrecorded = $people->where('status', 'Non pointé')->count();
+        $absent = $people->count() - $present - $unrecorded;
+        $stocks = Item::query()->where('is_active', true)
+            ->whereColumn('balance_base', '<=', 'alert_threshold_base')->orderBy('name')
+            ->get(['name', 'balance_base', 'alert_threshold_base']);
+        $lines = ['RAPPORT SYNTHÉTIQUE — '.$date->format('d/m/Y'),
+            'Activités dues : '.$tasks->count().' · exécutées / validées : '.$done.' · à valider : '.$pendingReview.' · non exécutées : '.($tasks->count() - $done - $pendingReview),
+            'Inclut les activités ouvertes des jours précédents.'];
+        foreach ($categories as $category) {
+            $lines[] = $category['name'].' : '.$category['total'].' dues · '.$category['done'].' exécutées · '.$category['pending'].' à valider · '.$category['not_done'].' non exécutées';
+        }
+        $lines[] = 'Personnel : '.$present.' présent(s) · '.$absent.' non présent(s) · '.$unrecorded.' non pointé(s).';
+        $lines[] = 'Stocks en alerte : '.$stocks->count().' (stock global, état actuel).';
+        $lines[] = 'Détails : '.url('/taches?date='.$date->toDateString());
+
+        return ['site_id' => $siteId, 'date' => $date->toDateString(), 'lines' => $lines, 'details' => $details, 'categories' => $categories, 'people' => $people->all(), 'stock_alerts' => $stocks->toArray(), 'recommendations' => array_values(array_unique($recommendations)), 'total' => $tasks->count(), 'done' => $done, 'pending_review' => $pendingReview, 'corrections' => $corrections, 'justified' => $justified, 'unanswered' => $unanswered, 'unassigned' => $unassigned];
     }
 }

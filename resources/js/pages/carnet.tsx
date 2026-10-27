@@ -1156,7 +1156,7 @@ export default function Carnet() {
 
   /* ═══════════ FORMULAIRES ═══════════ */
   const vTv = { zone: "", tache: "", qte: "", unite: "plants", qui: "", quiManuel: "", personnes: 1, heures: 4 };
-  const vEn = { bac: "", zone: "", volume: "", qui: "", quiManuel: "", cendreRecente: "", horsPlan: "" };
+  const vEn = { bac: "", zone: "", volume: "", qui: "", quiManuel: "", cendreRecente: "", horsPlan: "", produitsManquants: "" };
   const vPh = { zone: "", volume: "", cible: "", qui: "", quiManuel: "", dar: "", horsPlan: "" };
   const vMs = { id: "", valeur: "", zone: "" };
   const vRc = { zone: "", kg: "", regimes: "", ecart: "", motif: "", qualite: "", caisses: "", photos: [] };
@@ -1203,8 +1203,10 @@ export default function Carnet() {
 
   const art = (id) => articles.find((a) => a.id === id) || null;
   const nomArt = (id) => (art(id) || { nom: id }).nom;
+  const libelleArticle = (a) => a.id === "ENG02" && a.nom.startsWith("Multi-K")
+    ? `Nitrate de potassium — ${a.nom}` : a.nom;
   const optArticles = (cat) => articles.filter((a) => (cat ? a.cat === cat : true))
-    .map((a) => ({ v: a.id, t: `${a.nom} — stock ${a.stock} ${a.unite}` }));
+    .map((a) => ({ v: a.id, t: `${libelleArticle(a)} — stock ${a.stock} ${a.unite}` }));
   const cultureDe = (z) => (cultures[z] ? cultures[z].type : "");
   const ageDe = (z) => (cultures[z] ? jours(cultures[z].debut, date) : null);
   /* n'affiche que les intrants autorisés pour la spéculation de la zone */
@@ -1213,7 +1215,7 @@ export default function Carnet() {
     const aut = t && INTRANTS_AUTORISES[t] ? INTRANTS_AUTORISES[t][cat] : null;
     const l = articles.filter((a) => a.cat === cat && (!aut || aut.indexOf(a.id) >= 0));
     return (l.length ? l : articles.filter((a) => a.cat === cat))
-      .map((a) => ({ v: a.id, t: `${a.nom} — stock ${a.stock} ${a.unite}` }));
+      .map((a) => ({ v: a.id, t: `${libelleArticle(a)} — stock ${a.stock} ${a.unite}` }));
   };
   /* n'affiche que les tâches qui vont avec l'atelier choisi */
   const tachesPour = (zone) => {
@@ -1483,10 +1485,11 @@ export default function Carnet() {
   };
 
   const enregistrerEngrais = async () => {
-    if (!melangeE.length) { flash("Ajoutez au moins un produit au mélange", 4000); return; }
+    const produitsManquants = en.produitsManquants.trim();
+    if (!melangeE.length && !produitsManquants) { flash("Ajoutez un produit appliqué ou indiquez les produits manquants", 4000); return; }
     if (!en.bac || !en.zone) { flash("Bac et zone sont obligatoires", 4000); return; }
     const cf = conflitBac(); if (cf) { flash(cf, 7000); return; }
-    if (horsCalendrier(en.zone, "Fertigation") && (!en.horsPlan || en.horsPlan.startsWith("Non"))) {
+    if (melangeE.length && horsCalendrier(en.zone, "Fertigation") && (!en.horsPlan || en.horsPlan.startsWith("Non"))) {
       flash("Apport hors calendrier : confirmez la raison, ou revenez au plan.", 6000); return; }
     if (melangeAzote && cendreProche) { flash(`INTERDIT : cendres épandues le ${cendreProche} sur ${en.zone}. Attendez ${DELAI_CENDRE_UREE} jours avant l'azote.`, 7000); return; }
     if (melangeAzote && en.cendreRecente === "Oui — moins de 14 jours") { flash("INTERDIT : azote sur cendres fraîches. Prévenez la Direction.", 6000); return; }
@@ -1495,10 +1498,10 @@ export default function Carnet() {
     }
     const cout = await appliquerSorties(melangeE, en.zone, `Fertilisation ${en.bac}`);
     await majCumul(en.zone, { coutIntrant: cout });
-    const item = { ...en, centre: centreAuto(en.zone),
+    const item = { ...en, produitsManquants, centre: centreAuto(en.zone),
       produits: melangeE.map((m) => ({ ...m, nom: nomArt(m.articleId) })), cout, par: nomAgent(en) };
     const n = [...engrais, item]; setEngrais(n); sauver({ engrais: n });
-    noter("Fertilisation", `${en.zone} — ${en.bac} — ${usd(cout)} ${DEVISE}`);
+    noter("Fertilisation", `${en.zone} — ${en.bac} — ${usd(cout)} ${DEVISE}${produitsManquants ? ` — MANQUEMENT : ${produitsManquants}` : ""}`);
     setEn(vEn); setMelangeE([]);
   };
   const enregistrerPhyto = async () => {
@@ -1787,6 +1790,7 @@ export default function Carnet() {
       l.push(csvLigne(["Date", "Section", "Type", "Zone", "Détail", "Quantité", "Unité", "Coût USD", "Agent"]));
       travaux.forEach((t) => l.push(csvLigne([date, NOM_BUREAU, "Travail", t.zone, t.tache, t.qte, t.unite, t.coutMO || "", courtNom(t.qui)])));
       engrais.forEach((e) => e.produits.forEach((p) => l.push(csvLigne([date, NOM_BUREAU, "Fertilisation", e.zone, `${e.bac} — ${p.nom} ${p.dose}`, p.qte, "", "", courtNom(e.qui)]))));
+      engrais.filter((e) => e.produitsManquants).forEach((e) => l.push(csvLigne([date, NOM_BUREAU, "Manquement fertilisation", e.zone, `${e.bac} — ${e.produitsManquants}`, "", "", "", courtNom(e.qui)])));
       phyto.forEach((p) => p.produits.forEach((x) => l.push(csvLigne([date, NOM_BUREAU, "Traitement", p.zone, `${x.nom} ${x.dose}`, x.qte, "", "", courtNom(p.qui)]))));
       mesures.forEach((m) => l.push(csvLigne([date, NOM_BUREAU, "Mesure", m.zone, m.nom, m.valeur, m.unite, "", m.par])));
       recoltes.forEach((r) => l.push(csvLigne([date, NOM_BUREAU, "Récolte", r.zone, r.lot, r.kg, "kg", "", ""])));
@@ -1875,6 +1879,9 @@ export default function Carnet() {
         (j.engrais || []).forEach((e) => (e.produits || []).forEach((x) => l.push(csvLigne(
           [d, NB, "Fertilisation", e.zone, e.centre || centreAuto(e.zone),
             `${e.bac} — ${x.nom} ${x.dose}`, x.qte, "", usd(e.cout || 0), e.par]))));
+        (j.engrais || []).filter((e) => e.produitsManquants).forEach((e) => l.push(csvLigne(
+          [d, NB, "Manquement fertilisation", e.zone, e.centre || centreAuto(e.zone),
+            `${e.bac} — ${e.produitsManquants}`, "", "", "", e.par])));
         (j.phyto || []).forEach((x) => (x.produits || []).forEach((y) => l.push(csvLigne(
           [d, NB, "Traitement", x.zone, x.centre || centreAuto(x.zone), `${y.nom} ${y.dose}`,
             y.qte, "", usd(x.cout || 0), x.par]))));
@@ -2023,6 +2030,23 @@ export default function Carnet() {
 
   /* ═══════════ RAPPORT ═══════════ */
   const rapport = () => {
+    const suivies = (tachesServeur || []).filter((t) => zonesBureau.includes(t.zone));
+    const validees = suivies.filter((t) => t.status === "done").length;
+    const aValider = suivies.filter((t) => t.status === "pending_review").length;
+    const presents = presence.filter((p) => p.statut === "Présent").length;
+    return [
+      `RAPPORT SYNTHÉTIQUE — ${NOM_BUREAU} — ${date}`,
+      tachesServeur === null ? "Activités : suivi serveur indisponible" : `Activités dues : ${suivies.length} · exécutées / validées : ${validees} · à valider : ${aValider} · non exécutées : ${suivies.length - validees - aValider}`,
+      `Travaux saisis dans le carnet : ${travaux.length}`,
+      ...travaux.map((t) => `${t.zone} — ${t.tache} — ${t.qte} ${t.unite} · ${t.personnes} pers. × ${t.heures} h${t.par || t.qui ? ` — ${t.par || courtNom(t.qui)}` : ""} — ${usd(t.coutMO || 0)} ${DEVISE}`),
+      ...engrais.filter((e) => e.produitsManquants).map((e) => `MANQUEMENT FERTILISATION — ${e.zone} — ${e.bac} : ${e.produitsManquants}`),
+      `Pointages saisis : ${presents} présent(s) · ${presence.length - presents} non présent(s)`,
+      `Stocks en alerte : ${alertesStock} (état actuel)`,
+      `Problèmes signalés : ${problemes.length}`,
+      `Détails par catégorie et preuves : ${window.location.origin}/taches?date=${date}`,
+    ].join("\n");
+  };
+  const rapportDetaille = () => {
     const L = [];
     L.push(`RAPPORT JOURNALIER — ${NOM_BUREAU}`);
     L.push(ENTITE); L.push(SITE);
@@ -2098,7 +2122,7 @@ export default function Carnet() {
       bloc("TRAVAUX EXÉCUTÉS", travaux, (t) =>
         `${t.zone} — ${t.tache} — ${t.qte} ${t.unite} — ${t.personnes} pers. × ${t.heures} h${t.qui ? " — " + courtNom(t.qui) : ""}`);
       bloc("FERTILISATION", engrais, (e) =>
-        `${e.zone} — ${e.bac}${e.volume ? ` (${e.volume} L)` : ""} — ${e.produits.map((p) => `${p.nom} ${p.dose}${p.qte ? ` [${p.qte} sorti du stock]` : ""}`).join(" + ")} — ${usd(e.cout)} ${DEVISE}`);
+        `${e.zone} — ${e.bac}${e.volume ? ` (${e.volume} L)` : ""} — ${e.produits.map((p) => `${p.nom} ${p.dose}${p.qte ? ` [${p.qte} sorti du stock]` : ""}`).join(" + ")} — ${usd(e.cout)} ${DEVISE}${e.produitsManquants ? ` — MANQUEMENT : ${e.produitsManquants}` : ""}`);
       bloc("TRAITEMENTS PHYTOSANITAIRES", phyto, (p) =>
         `${p.zone}${p.volume ? ` (${p.volume} L)` : ""} — ${p.produits.map((x) => `${x.nom} ${x.dose}`).join(" + ")}${p.cible ? ` — cible : ${p.cible}` : ""}${p.dar ? ` — RÉCOLTE INTERDITE JUSQU'AU ${p.dar}` : ""}`);
       if (mesures.length) bloc("MESURES", mesures, (m) =>
@@ -2567,6 +2591,11 @@ export default function Carnet() {
               options={["Oui — décision de la Direction", "Oui — rattrapage d'un apport manqué", "Non — je corrige"]}
               placeholder="Répondre" />
           </>)}
+          <Label>Produits manquants / non appliqués</Label>
+          <TextIn value={en.produitsManquants} onChange={(v) => setEn({ ...en, produitsManquants: v })}
+            placeholder="Ex. : nitrate de potassium indisponible — 1,1 kg non appliqué" />
+          <Note>Ajoutez au mélange uniquement les produits réellement appliqués. Un produit manquant
+            n'empêche pas l'enregistrement ; le manquement sera indiqué dans le rapport.</Note>
           <Label>Qui a pesé les doses</Label>
           <ChoixAgent valeur={en.qui} manuel={en.quiManuel}
             onValeur={(v) => setEn({ ...en, qui: v })} onManuel={(v) => setEn({ ...en, quiManuel: v })} />
@@ -2577,6 +2606,7 @@ export default function Carnet() {
               {p.nom} — <b style={{ color: C.laterite }}>{p.dose}</b></div>)}
             <div style={{ fontSize: 14, marginTop: 4, color: C.gris }}>
               {e.volume ? `${e.volume} L · ` : ""}{usd(e.cout)} {DEVISE} · {e.par}</div>
+            {e.produitsManquants && <Alerte tone="amber">Manquement : {e.produitsManquants}</Alerte>}
             <Supprimer onClick={() => retirer(engrais, setEngrais, i, "engrais", `${e.zone} — ${e.bac}`)} />
           </Card>)}
         </>)}
@@ -3148,6 +3178,9 @@ export default function Carnet() {
           <pre style={{ background: "#fff", border: `1px solid ${C.line}`, borderRadius: 4, padding: 14,
             fontSize: 13.5, lineHeight: 1.6, whiteSpace: "pre-wrap", fontFamily: "Inter, monospace",
             color: C.ink, overflowX: "auto" }}>{rapport()}</pre>
+          <details style={{ marginTop: 12 }}><summary style={{ cursor: "pointer" }}>Voir le rapport détaillé du carnet</summary>
+            <pre style={{ whiteSpace: "pre-wrap", fontSize: 13 }}>{rapportDetaille()}</pre>
+          </details>
         </>)}
 
         {/* ═════ REGISTRES — MENU ═════ */}

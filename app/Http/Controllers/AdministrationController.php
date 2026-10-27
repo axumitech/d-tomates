@@ -31,6 +31,7 @@ final class AdministrationController extends Controller
     public function index(): Response
     {
         return Inertia::render('administration', [
+            'modules' => collect(User::MODULES)->map(fn (string $label, string $value): array => ['value' => $value, 'label' => $label])->values(),
             'can_manage_users' => Gate::allows('create', User::class),
             'staff' => User::query()->with(['department:id,name', 'manager:id,name'])->orderBy('name')->get()->map(fn (User $user): array => [
                 'id' => $user->id,
@@ -50,6 +51,7 @@ final class AdministrationController extends Controller
                 'employed_until' => $user->employed_until?->toDateString(),
                 'is_field_only' => $user->is_field_only,
                 'active' => $user->isActive(),
+                'modules' => $user->modules ?? array_keys(User::MODULES),
             ]),
             'assets' => Asset::query()->with(['zone:id,name', 'costCentre:id,name'])->withCount(['workOrders as open_work_orders' => fn ($query) => $query->open()])->orderBy('name')->get()->map(fn (Asset $asset): array => [
                 'id' => $asset->id,
@@ -186,6 +188,8 @@ final class AdministrationController extends Controller
     private function userRules(): array
     {
         return [
+            'modules' => ['required', 'array', 'min:1'],
+            'modules.*' => ['required', 'string', 'distinct', Rule::in(array_keys(User::MODULES))],
             'role' => ['required', Rule::enum(Role::class)], 'job_title' => ['nullable', 'string', 'max:255'],
             'site_id' => ['required', 'integer', 'exists:sites,id'], 'department_id' => ['nullable', 'integer', 'exists:departments,id'],
             'manager_id' => ['nullable', 'integer', 'exists:users,id'], 'approval_ceiling' => ['nullable', 'numeric', 'min:0'],
@@ -213,6 +217,7 @@ final class AdministrationController extends Controller
     private function userPayload(array $data): array
     {
         return [
+            'modules' => $data['modules'],
             'role' => $data['role'], 'job_title' => $data['job_title'] ?? null, 'site_id' => $data['site_id'],
             'department_id' => $data['department_id'] ?? null, 'manager_id' => $data['manager_id'] ?? null,
             'approval_ceiling_cents' => $data['role'] === Role::Direction->value ? null : $this->moneyToCents($data['approval_ceiling'] ?? 0),

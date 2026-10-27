@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils';
 
 type Option = { value: string; label: string };
 type Staff = {
+    modules: string[];
     id: number;
     name: string;
     email: string;
@@ -83,6 +84,7 @@ type Asset = {
     open_work_orders: number;
 };
 type Props = {
+    modules: Option[];
     can_manage_users: boolean;
     staff: Staff[];
     assets: Asset[];
@@ -204,6 +206,7 @@ function StaffDialog({ user, props }: { user?: Staff; props: Props }) {
         employed_from: user?.employed_from ?? '',
         employed_until: user?.employed_until ?? '',
         is_field_only: user?.is_field_only ?? true,
+        modules: user?.modules ?? ['taches', 'carnet'],
         operation: '',
     });
     const managers = props.staff.filter(
@@ -453,6 +456,44 @@ function StaffDialog({ user, props }: { user?: Staff; props: Props }) {
                         />{' '}
                         Compte principalement utilisé sur le terrain
                     </label>
+                    <fieldset className="space-y-2 rounded-xl border p-4">
+                        <legend className="px-2 font-medium">
+                            Modules accessibles
+                        </legend>
+                        <p className="text-sm text-muted-foreground">
+                            Sélectionnez au moins un module. Les droits du rôle
+                            restent applicables.
+                        </p>
+                        {props.modules.map((module) => (
+                            <label
+                                key={module.value}
+                                className="flex items-center gap-2 text-sm"
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={form.data.modules.includes(
+                                        module.value,
+                                    )}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'modules',
+                                            event.target.checked
+                                                ? [
+                                                      ...form.data.modules,
+                                                      module.value,
+                                                  ]
+                                                : form.data.modules.filter(
+                                                      (value) =>
+                                                          value !==
+                                                          module.value,
+                                                  ),
+                                        )
+                                    }
+                                />
+                                {module.label}
+                            </label>
+                        ))}
+                    </fieldset>
                     {Object.keys(form.errors).length > 0 && (
                         <div
                             role="alert"

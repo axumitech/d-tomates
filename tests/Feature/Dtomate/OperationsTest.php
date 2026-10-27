@@ -125,7 +125,7 @@ final class OperationsTest extends TestCase
         $direction = User::factory()->create(['site_id' => $site->id, 'role' => Role::Direction]);
         $supervisor = User::factory()->create(['site_id' => $site->id, 'department_id' => $department->id, 'role' => Role::Superviseur]);
         $this->actingAs($direction);
-        $base = ['actor_id' => $direction->id, 'site_code' => (string) config('dtomate.site_access_code')];
+        $base = ['modules' => array_keys(User::MODULES), 'actor_id' => $direction->id, 'site_code' => (string) config('dtomate.site_access_code')];
 
         $this->patch(route('administration.users.update', $supervisor), $base + [
             'name' => $supervisor->name, 'email' => $supervisor->email, 'role' => Role::Superviseur->value,

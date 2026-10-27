@@ -65,6 +65,27 @@ type Props = {
     }[];
     report: {
         lines: string[];
+        details: string[];
+        categories: {
+            name: string;
+            total: number;
+            done: number;
+            pending: number;
+            not_done: number;
+            tasks: {
+                id: number;
+                title: string;
+                status: string;
+                zone: string | null;
+                assignee: string | null;
+            }[];
+        }[];
+        people: { name: string; status: string }[];
+        stock_alerts: {
+            name: string;
+            balance_base: number;
+            alert_threshold_base: number;
+        }[];
         total: number;
         done: number;
         justified: number;
@@ -1202,6 +1223,75 @@ export default function DailyTasks(props: Props) {
                         <pre className="overflow-x-auto rounded-xl border p-5 font-sans text-sm leading-7 whitespace-pre-wrap">
                             {props.report.lines.join('\n')}
                         </pre>
+                        {props.report.categories.map((category) => (
+                            <details
+                                key={category.name}
+                                className="rounded-xl border p-4"
+                            >
+                                <summary className="cursor-pointer font-medium">
+                                    {category.name} — {category.total} dues ·{' '}
+                                    {category.done} exécutées ·{' '}
+                                    {category.pending} à valider ·{' '}
+                                    {category.not_done} non exécutées
+                                </summary>
+                                <ul className="mt-3 space-y-2 text-sm">
+                                    {category.tasks.map((task) => (
+                                        <li key={task.id}>
+                                            {task.title} ·{' '}
+                                            {task.zone ?? 'Sans zone'} ·{' '}
+                                            {task.assignee ?? 'Non attribuée'} ·{' '}
+                                            {(
+                                                {
+                                                    done: 'Exécutée / validée',
+                                                    pending_review: 'À valider',
+                                                    correction_requested:
+                                                        'Correction demandée',
+                                                    justified:
+                                                        'Non exécutée / justifiée',
+                                                    unjustified:
+                                                        'Non exécutée / sans justification',
+                                                    todo: 'Non exécutée / sans réponse',
+                                                } as Record<string, string>
+                                            )[task.status] ?? task.status}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </details>
+                        ))}
+                        <details className="rounded-xl border p-4">
+                            <summary className="cursor-pointer font-medium">
+                                Personnel — voir les présences
+                            </summary>
+                            {props.report.people.map((person, index) => (
+                                <p key={index} className="mt-2 text-sm">
+                                    {person.name} · {person.status}
+                                </p>
+                            ))}
+                        </details>
+                        <details className="rounded-xl border p-4">
+                            <summary className="cursor-pointer font-medium">
+                                Stocks en alerte —{' '}
+                                {props.report.stock_alerts.length}
+                            </summary>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                Stock global actuel ; quantités en unités de
+                                base.
+                            </p>
+                            {props.report.stock_alerts.map((stock, index) => (
+                                <p key={index} className="mt-2 text-sm">
+                                    {stock.name} · solde {stock.balance_base} ·
+                                    seuil {stock.alert_threshold_base}
+                                </p>
+                            ))}
+                        </details>
+                        <details className="rounded-xl border p-4">
+                            <summary className="cursor-pointer font-medium">
+                                Historique, preuves et recommandations
+                            </summary>
+                            <pre className="mt-3 font-sans text-sm whitespace-pre-wrap">
+                                {props.report.details.join('\n')}
+                            </pre>
+                        </details>
                     </div>
                 )}
             </div>
