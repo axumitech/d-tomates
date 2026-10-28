@@ -34,3 +34,40 @@ test('le manquement de fertilisation figure aussi dans le rapport principal', ()
   assert.match(rapport({ engrais: [{ zone: 'Module 1', bac: 'Bac A', produitsManquants: 'Nitrate de potassium' }] }),
     /MANQUEMENT FERTILISATION — Module 1 — Bac A : Nitrate de potassium/);
 });
+
+test('les catégories distinguent validations, preuves, corrections et absence de déclaration', () => {
+  const text = rapport({ tachesServeur: [
+    { zone: 'Module 1', category: 'Conduite', status: 'done', work_date: '2026-10-27' },
+    { zone: 'Module 1', category: 'Conduite', status: 'pending_review', work_date: '2026-10-27' },
+    { zone: 'Module 1', category: 'Conduite', status: 'correction_requested', work_date: '2026-10-26' },
+    { zone: 'Module 1', category: 'Irrigation', status: 'todo', work_date: '2026-10-27' },
+    { zone: 'Module 1', status: 'justified', work_date: '2026-10-27' },
+    { zone: 'Module 2', category: 'Conduite', status: 'done', work_date: '2026-10-27' },
+  ] });
+  assert.match(text, /Activités à suivre : 5 · exécutées \/ validées : 1 · à valider : 1 · à corriger : 1 · sans exécution déclarée : 2/);
+  assert.match(text, /dont 1 des jours précédents/);
+  assert.match(text, /Conduite : 1 sur 3 validées · 1 à valider · 1 à corriger · 0 sans exécution déclarée/);
+  assert.match(text, /Irrigation : 0 sur 1 validées · 0 à valider · 0 à corriger · 1 sans exécution déclarée/);
+  assert.match(text, /Autres : 0 sur 1 validées/);
+});
+
+test('le bilan présente les familles métier et leurs types en validées sur dues', () => {
+  const task = (category, nom, status = 'todo') => ({ zone: 'Module 1', category, nom, status, work_date: '2026-10-27' });
+  const text = rapport({ tachesServeur: [
+    task('Phyto', 'Pulvérisation fongicide — vendredi soir', 'done'),
+    task('Phyto', 'Drench fongicide du substrat', 'pending_review'),
+    task('Phytosanitaire', 'Application herbicide'),
+    task('Phyto', 'Application pesticide', 'done'),
+    task('Fertigation', 'Fertigation — lundi', 'done'),
+    task('Fertilisation', 'Foliaire potassium + calcium'),
+    task('Entretien', 'Désherbage manuel'),
+  ] });
+  assert.match(text, /Phytosanitaire : 2 sur 4 validées/);
+  assert.match(text, /  - Fongicides : 1 sur 2 validées · 1 à valider/);
+  assert.match(text, /  - Herbicides : 0 sur 1 validées/);
+  assert.match(text, /  - Pesticides : 1 sur 1 validées/);
+  assert.match(text, /Fertilisation : 1 sur 2 validées/);
+  assert.match(text, /  - Fertigation : 1 sur 1 validées/);
+  assert.match(text, /Entretien : 0 sur 1 validées/);
+  assert.match(text, /  - Désherbage manuel : 0 sur 1 validées/);
+});

@@ -90,7 +90,7 @@ final class DailyTaskController extends Controller
         abort_unless($user->isActive(), 403);
         $request->validate(['date' => ['required', 'date_format:Y-m-d']]);
         $date = CarbonImmutable::parse($request->input('date'), config('dtomate.timezone'));
-        $query = Task::query()->with(['zone', 'assignee'])->where('site_id', $user->site_id)->where('origin', 'crop_registry')->whereDate('work_date', '<=', $date);
+        $query = Task::query()->with(['zone', 'assignee', 'template'])->where('site_id', $user->site_id)->where('origin', 'crop_registry')->whereDate('work_date', '<=', $date);
         if ($user->role !== Role::Direction) {
             $query->where(fn ($q) => $q->where('assigned_to', $user->id)->when($user->role === Role::Superviseur && $user->department_id !== null, fn ($q) => $q->orWhere('department_id', $user->department_id)));
         }
@@ -108,6 +108,7 @@ final class DailyTaskController extends Controller
 
         return response()->json(['lastExecutions' => $lastExecutions, 'tasks' => $tasks->map(fn (Task $task): array => [
             'id' => $task->id, 'zone' => $task->zone->legacy_key ?? $task->zone?->name, 'nom' => $task->title,
+            'category' => $task->template?->category ?? 'Autres',
             'detail' => $task->instructions, 'status' => $task->status, 'qui' => $task->assignee->name ?? 'Non attribuée',
             'h' => $task->closed_at?->setTimezone((string) config('dtomate.timezone'))->format('H:i'), 'work_date' => ($task->work_date ?? $task->due_at)->toDateString(),
             'justification' => $task->justification, 'photos' => count($task->evidence['photos'] ?? []),

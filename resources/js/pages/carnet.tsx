@@ -2033,11 +2033,51 @@ export default function Carnet() {
     const suivies = (tachesServeur || []).filter((t) => zonesBureau.includes(t.zone));
     const validees = suivies.filter((t) => t.status === "done").length;
     const aValider = suivies.filter((t) => t.status === "pending_review").length;
+    const corrections = suivies.filter((t) => t.status === "correction_requested").length;
+    const retards = suivies.filter((t) => t.work_date < date).length;
+    const categorie = (t) => {
+      const cat = (t.category || "Autres").trim();
+      if (/^(phyto|phytosanitaire|phytosanitaires)$/i.test(cat)) return "Phytosanitaire";
+      if (/^(fertigation|fertilisation)$/i.test(cat)) return "Fertilisation";
+      return cat || "Autres";
+    };
+    const typeTache = (t) => {
+      const nom = t.nom || "Autres tâches";
+      if (categorie(t) === "Phytosanitaire") {
+        if (/herbicide/i.test(nom)) return "Herbicides";
+        if (/insecticide/i.test(nom)) return "Insecticides";
+        if (/fongicide/i.test(nom)) return "Fongicides";
+        if (/nématicide|nematicide/i.test(nom)) return "Nématicides";
+        if (/pesticide/i.test(nom)) return "Pesticides";
+      }
+      return nom.split(" — ")[0];
+    };
+    const categories = [...new Set(suivies.map(categorie))].sort();
+    const bilan = (taches) => {
+      const validees = taches.filter((t) => t.status === "done").length;
+      const aValider = taches.filter((t) => t.status === "pending_review").length;
+      const corrections = taches.filter((t) => t.status === "correction_requested").length;
+      return `${validees} sur ${taches.length} validées · ${aValider} à valider · ${corrections} à corriger · ${taches.length - validees - aValider - corrections} sans exécution déclarée`;
+    };
     const presents = presence.filter((p) => p.statut === "Présent").length;
     return [
       `RAPPORT SYNTHÉTIQUE — ${NOM_BUREAU} — ${date}`,
-      tachesServeur === null ? "Activités : suivi serveur indisponible" : `Activités dues : ${suivies.length} · exécutées / validées : ${validees} · à valider : ${aValider} · non exécutées : ${suivies.length - validees - aValider}`,
+      tachesServeur === null ? "Activités : suivi serveur indisponible" : `Activités à suivre : ${suivies.length} · exécutées / validées : ${validees} · à valider : ${aValider} · à corriger : ${corrections} · sans exécution déclarée : ${suivies.length - validees - aValider - corrections}`,
+      ...(tachesServeur === null ? [] : [
+        `Le total correspond aux activités dues, dont ${retards} des jours précédents ; il ne représente pas les travaux effectués.`,
+        "BILAN PAR CATÉGORIE",
+        "Lecture : validées sur activités dues (retards inclus). Les preuves à valider sont comptées séparément.",
+        ...(categories.length ? categories.flatMap((cat) => {
+          const taches = suivies.filter((t) => categorie(t) === cat);
+          const types = [...new Set(taches.map(typeTache))].sort();
+          return [
+            `${cat} : ${bilan(taches)}`,
+            ...types.map((type) => `  - ${type} : ${bilan(taches.filter((t) => typeTache(t) === type))}`),
+          ];
+        }) : ["Aucune activité à suivre."]),
+      ]),
       `Travaux saisis dans le carnet : ${travaux.length}`,
+      "Les saisies du carnet sont distinctes des validations de tâches ; elles ne s’ajoutent pas aux activités validées.",
       ...travaux.map((t) => `${t.zone} — ${t.tache} — ${t.qte} ${t.unite} · ${t.personnes} pers. × ${t.heures} h${t.par || t.qui ? ` — ${t.par || courtNom(t.qui)}` : ""} — ${usd(t.coutMO || 0)} ${DEVISE}`),
       ...engrais.filter((e) => e.produitsManquants).map((e) => `MANQUEMENT FERTILISATION — ${e.zone} — ${e.bac} : ${e.produitsManquants}`),
       `Pointages saisis : ${presents} présent(s) · ${presence.length - presents} non présent(s)`,
